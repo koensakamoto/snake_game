@@ -3,6 +3,7 @@
 // </copyright>
 
 using CS3500.Networking;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace CS3500.Chatting;
@@ -12,6 +13,8 @@ namespace CS3500.Chatting;
 /// </summary>
 public partial class ChatServer
 {
+
+    Dictionary<string, NetworkConnection> clients = new Dictionary<string, NetworkConnection>();
 
     /// <summary>
     ///   The main program.
