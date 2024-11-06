@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj": {}
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {}
   },
   "projects": {
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj": {
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
         "projectName": "Networking",
-        "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj",
+        "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
         "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\obj\\",
+        "outputPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",

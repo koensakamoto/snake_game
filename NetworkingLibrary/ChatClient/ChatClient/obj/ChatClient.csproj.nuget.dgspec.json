@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient\\ChatClient.csproj": {}
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient\\ChatClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
         "projectName": "ChatClient.Client",
-        "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
+        "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
         "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\obj\\",
+        "outputPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -29,8 +29,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj": {
-                "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj"
+              "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {
+                "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj"
               }
             }
           }
@@ -98,14 +98,14 @@
         }
       }
     },
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient\\ChatClient.csproj": {
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient\\ChatClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient\\ChatClient.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient\\ChatClient.csproj",
         "projectName": "ChatClient",
-        "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient\\ChatClient.csproj",
+        "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient\\ChatClient.csproj",
         "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient\\obj\\",
+        "outputPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -123,8 +123,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
-                "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj"
+              "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
+                "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj"
               }
             }
           }
@@ -176,14 +176,14 @@
         }
       }
     },
-    "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj": {
+    "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
         "projectName": "Networking",
-        "projectPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\Networking.csproj",
+        "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
         "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\koens\\Downloads\\ps8_handout\\Networking\\obj\\",
+        "outputPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",

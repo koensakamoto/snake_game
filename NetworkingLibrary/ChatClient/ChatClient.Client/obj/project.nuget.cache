@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FDmSLBrJkgo=",
+  "dgSpecHash": "5Vjdd/o77YA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\koens\\Downloads\\ps8_handout\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
+  "projectFilePath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\koens\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.10\\microsoft.aspnetcore.authorization.8.0.10.nupkg.sha512",
     "C:\\Users\\koens\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.10\\microsoft.aspnetcore.components.8.0.10.nupkg.sha512",
