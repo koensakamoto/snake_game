@@ -78,6 +78,7 @@ public sealed class NetworkConnection : IDisposable
     /// <param name="port"> The port, e.g., 11000. </param>
     public void Connect(string host, int port)
     {
+        _tcpClient = new TcpClient();
         _tcpClient.Connect(host, port);
         _reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
         _writer = new StreamWriter(_tcpClient.GetStream(), Encoding.UTF8) { AutoFlush = true }; // AutoFlush ensures data is sent immediately
@@ -95,15 +96,18 @@ public sealed class NetworkConnection : IDisposable
     /// <param name="message"> The string of characters to send. </param>
     public void Send(string message)
     {
-        // need to handle multiple line message
         if (!IsConnected)
         {
             throw new InvalidOperationException();
         }
-        _writer?.WriteLine(message);
+        string[] messages = message.Split("\\n");
+
+        foreach (string s in messages)
+        {
+            _writer?.WriteLine(s);
+        }
+
     }
-
-
     /// <summary>
     ///   Read a message from the remote side of the connection.  The message will contain
     ///   all characters up to the first new line. See <see cref="Send"/>.
@@ -130,7 +134,7 @@ public sealed class NetworkConnection : IDisposable
         {
             _reader?.Dispose();
             _writer?.Dispose();
-            _tcpClient.Close();    
+            _tcpClient.Close();
         }
     }
 
