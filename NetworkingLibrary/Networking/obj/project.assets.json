@@ -152,19 +152,26 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\koens\\.nuget\\packages\\": {}
+    "C:\\Users\\u1452229\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
+      "projectUniqueName": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
       "projectName": "Networking",
-      "projectPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
-      "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\koens\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\obj\\",
+      "projectPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
+      "packagesPath": "C:\\Users\\u1452229\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
       "configFilePaths": [
-        "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\u1452229\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

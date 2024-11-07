@@ -1,6 +1,15 @@
 ﻿// <copyright file="NetworkConnection.cs" company="UofU-CS3500">
 // Copyright (c) 2024 UofU-CS3500. All rights reserved.
 // </copyright>
+///<author>
+///Dominik Jamrich and Koen Sakamoto
+/// </author>
+/// <version>
+/// Version 1.1
+/// </version>
+/// <date>
+/// November 2024
+/// </date>
 
 using System.Net.Sockets;
 using System.Reflection.PortableExecutable;

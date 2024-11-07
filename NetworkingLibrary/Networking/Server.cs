@@ -1,6 +1,16 @@
 ﻿// <copyright file="Server.cs" company="UofU-CS3500">
 // Copyright (c) 2024 UofU-CS3500. All rights reserved.
 // </copyright>
+///<author>
+///Dominik Jamrich and Koen Sakamoto
+/// </author>
+/// <version>
+/// Version 1.1
+/// </version>
+/// <date>
+/// November 2024
+/// </date>
+
 
 using System.Diagnostics;
 using System.Net;
@@ -30,13 +40,13 @@ public static class Server
 
         listener.Start();
 
-        while (true)
+        while (true)//infinite loop
         {
-            TcpClient client = listener.AcceptTcpClient();
+            TcpClient client = listener.AcceptTcpClient(); // Listen for connection
 
-            Console.WriteLine("accepted a connection");
+            Console.WriteLine("Accepted a connection");
 
-            new Thread(() => handleConnect(new NetworkConnection(client)));        
+            new Thread(() => handleConnect(new NetworkConnection(client)));  //start a new thread to handle client
         }
     }
 }

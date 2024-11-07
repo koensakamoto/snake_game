@@ -1,6 +1,15 @@
 ﻿// <copyright file="ChatServer.cs" company="UofU-CS3500">
 // Copyright (c) 2024 UofU-CS3500. All rights reserved.
 // </copyright>
+///<author>
+///Dominik Jamrich and Koen Sakamoto
+/// </author>
+/// <version>
+/// Version 1.1
+/// </version>
+/// <date>
+/// November 2024
+/// </date>
 
 using CS3500.Networking;
 using System.IO.Pipes;
@@ -14,7 +23,9 @@ namespace CS3500.Chatting;
 /// </summary>
 public partial class ChatServer
 {
-
+    /// <summary>
+    /// Dictionary mapping client names with their unique NetworkConnections
+    /// </summary>
     private static Dictionary<string, NetworkConnection> clients = new Dictionary<string, NetworkConnection>();
 
     /// <summary>
@@ -41,13 +52,14 @@ public partial class ChatServer
         // handle all messages until disconnect.
         try
         {
+            string tempName = string.Empty;
+
+
             while (true)
             {
                 var message = connection.ReadLine();
 
-                string tempName = string.Empty;
-
-                if (tempName.Equals(string.Empty))
+                if (tempName.Equals(string.Empty))//client doesn't have a name yet
                 {
                     lock (clients)
                     {
@@ -57,7 +69,7 @@ public partial class ChatServer
                     tempName = message;
                 }
 
-                else
+                else//This isn't the client's first message
                 {
                     foreach (var client in clients.Values)
                     {
@@ -69,7 +81,7 @@ public partial class ChatServer
                 }
             }
         }
-        catch (Exception)
+        catch (Exception)//there was an exception
         {
             Console.WriteLine("connection closed");
             return;
