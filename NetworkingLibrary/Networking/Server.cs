@@ -1,15 +1,15 @@
 ﻿// <copyright file="Server.cs" company="UofU-CS3500">
 // Copyright (c) 2024 UofU-CS3500. All rights reserved.
 // </copyright>
-///<author>
-///Dominik Jamrich and Koen Sakamoto
-/// </author>
-/// <version>
-/// Version 1.1
-/// </version>
-/// <date>
-/// November 2024
-/// </date>
+//<author>
+//Dominik Jamrich and Koen Sakamoto
+// </author>
+// <version>
+// Version 1.1
+// </version>
+// <date>
+// November 2024
+// </date>
 
 
 using System.Diagnostics;
@@ -46,7 +46,7 @@ public static class Server
 
             Console.WriteLine("Accepted a connection");
 
-            new Thread(() => handleConnect(new NetworkConnection(client)));  //start a new thread to handle client
+            new Thread(() => handleConnect(new NetworkConnection(client))).Start();  //start a new thread to handle client
         }
     }
 }

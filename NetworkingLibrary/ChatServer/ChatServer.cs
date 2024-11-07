@@ -1,15 +1,15 @@
 ﻿// <copyright file="ChatServer.cs" company="UofU-CS3500">
 // Copyright (c) 2024 UofU-CS3500. All rights reserved.
 // </copyright>
-///<author>
-///Dominik Jamrich and Koen Sakamoto
-/// </author>
-/// <version>
-/// Version 1.1
-/// </version>
-/// <date>
-/// November 2024
-/// </date>
+//<author>
+//Dominik Jamrich and Koen Sakamoto
+// </author>
+// <version>
+// Version 1.1
+// </version>
+// <date>
+// November 2024
+// </date>
 
 using CS3500.Networking;
 using System.IO.Pipes;
