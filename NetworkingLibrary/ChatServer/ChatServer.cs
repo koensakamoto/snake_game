@@ -50,10 +50,10 @@ public partial class ChatServer
     private static void HandleConnect(NetworkConnection connection)
     {
         // handle all messages until disconnect.
+        string tempName = string.Empty;
+
         try
         {
-            string tempName = string.Empty;
-
 
             while (true)
             {
@@ -61,29 +61,60 @@ public partial class ChatServer
 
                 if (tempName.Equals(string.Empty))//client doesn't have a name yet
                 {
+                    tempName = message;
+
                     lock (clients)
                     {
-                        clients.Add(message, connection);
+                        if (clients.ContainsKey(tempName))
+                        {
+                            connection.Send("This name is already taken, try again");
+                            tempName = string.Empty;
+                        }
+                        else
+                        {
+                            clients.Add(message, connection);
+                            connection.Send($"Welcome to the chat. Name: {tempName}");
+                            foreach (var client in clients.Values)
+                            {
+                                if (!client.Equals(connection))
+                                    client.Send($"{tempName} has joined the chat");
+                            }
+                        }
+
                     }
 
-                    tempName = message;
                 }
 
                 else//This isn't the client's first message
                 {
-                    foreach (var client in clients.Values)
+                    lock (clients)
                     {
-                        client.Send($"{tempName}: {message}");
+                        foreach (var client in clients.Values)
+                        {
+                            client.Send($"{tempName}: {message}");
+                        }
                     }
 
-
-                    connection.Send("thanks!");
                 }
             }
         }
         catch (Exception)//there was an exception
         {
-            Console.WriteLine("connection closed");
+            if (tempName != string.Empty)
+            {
+                lock (clients)
+                {
+                    clients.Remove(tempName);
+                }
+            }
+
+            lock (clients)
+            {
+                foreach (var client in clients.Values)
+                {
+                    client.Send($"{tempName} has left the chat");
+                }
+            }
             return;
         }
     }

@@ -109,12 +109,7 @@ public sealed class NetworkConnection : IDisposable
         {
             throw new InvalidOperationException();
         }
-        string[] messages = message.Split("\\n");
-
-        foreach (string s in messages)
-        {
-            _writer?.WriteLine(s);
-        }
+        _writer?.WriteLine(new StringBuilder(message));
 
     }
     /// <summary>
