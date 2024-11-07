@@ -32,13 +32,11 @@ public static class Server
 
         while (true)
         {
-            TcpClient client = new TcpClient();
+            TcpClient client = listener.AcceptTcpClient();
 
             Console.WriteLine("accepted a connection");
 
-            new Thread(() => handleConnect(new NetworkConnection(client)));
-
-        
+            new Thread(() => handleConnect(new NetworkConnection(client)));        
         }
     }
 }

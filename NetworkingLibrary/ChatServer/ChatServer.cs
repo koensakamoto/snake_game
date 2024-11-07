@@ -3,6 +3,7 @@
 // </copyright>
 
 using CS3500.Networking;
+using System.IO.Pipes;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -14,16 +15,16 @@ namespace CS3500.Chatting;
 public partial class ChatServer
 {
 
-    Dictionary<string, NetworkConnection> clients = new Dictionary<string, NetworkConnection>();
+    private static Dictionary<string, NetworkConnection> clients = new Dictionary<string, NetworkConnection>();
 
     /// <summary>
     ///   The main program.
     /// </summary>
     /// <param name="args"> ignored. </param>
     /// <returns> A Task. Not really used. </returns>
-    private static void Main( string[] args )
+    private static void Main(string[] args)
     {
-        Server.StartServer( HandleConnect, 11_000 );
+        Server.StartServer(HandleConnect, 11_000);
         Console.Read(); // don't stop the program.
     }
 
@@ -35,21 +36,43 @@ public partial class ChatServer
     ///   </pre>
     /// </summary>
     ///
-    private static void HandleConnect( NetworkConnection connection )
+    private static void HandleConnect(NetworkConnection connection)
     {
         // handle all messages until disconnect.
         try
         {
-            while ( true )
+            while (true)
             {
-                var message = connection.ReadLine( );
+                var message = connection.ReadLine();
 
-                connection.Send( "thanks!" );
+                string tempName = string.Empty;
+
+                if (tempName.Equals(string.Empty))
+                {
+                    lock (clients)
+                    {
+                        clients.Add(message, connection);
+                    }
+
+                    tempName = message;
+                }
+
+                else
+                {
+                    foreach (var client in clients.Values)
+                    {
+                        client.Send($"{tempName}: {message}");
+                    }
+
+
+                    connection.Send("thanks!");
+                }
             }
         }
-        catch ( Exception )
+        catch (Exception)
         {
-            // do anything necessary to handle a disconnected client in here
+            Console.WriteLine("connection closed");
+            return;
         }
     }
 }
