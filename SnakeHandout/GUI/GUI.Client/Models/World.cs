@@ -12,8 +12,12 @@ namespace GUI.Client.Models
 
         public int size { get; set; }
 
+        
         public World(int size)
         {
+            snakes = new Dictionary<int, Snake>();
+            powerups = new Dictionary<int, Powerup>();
+            walls = new Dictionary<int, Wall>();
             this.size = size;
         }
 
