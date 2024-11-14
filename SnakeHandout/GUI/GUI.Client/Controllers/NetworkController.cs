@@ -29,60 +29,65 @@ namespace GUI.Client.Controllers
 
             serverConnection.Send(name);//send the name
 
-            
+
             thisID = int.Parse(serverConnection.ReadLine());//player id
-            
-            worldSize = int.Parse(serverConnection.ReadLine()); 
+
+            worldSize = int.Parse(serverConnection.ReadLine());
 
             world = new World(worldSize);
 
-            while (true)
+            new Thread(() =>
             {
-
-                string sentInformation = serverConnection.ReadLine();
-
-                if (sentInformation.Contains("snake"))//server sent us a snake
+                while (true)
                 {
-                    Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
-                    if (!world.snakes.ContainsKey(snake!.ID)) {
-                        world.snakes.Add(snake!.ID, snake);
-                    }
-                    else
+
+                    string sentInformation = serverConnection.ReadLine();
+
+                    if (sentInformation.Contains("snake"))//server sent us a snake
                     {
-                        world.snakes[snake!.ID] = snake;
+                        Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
+                        if (!world.snakes.ContainsKey(snake!.ID))
+                        {
+                            world.snakes.Add(snake!.ID, snake);
+                        }
+                        else
+                        {
+                            world.snakes[snake!.ID] = snake;
+                        }
+
                     }
+                    else if (sentInformation.Contains("wall"))//server sent us a wall
+                    {
+                        Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
+                        if (!world.walls.ContainsKey(wall!.ID))
+                        {
+                            world.walls.Add(wall!.ID, wall); ;
+                        }
+                        else
+                        {
+                            world.walls[wall!.ID] = wall;
+                        }
+
+
+                    }
+                    else//server sent us a powerup
+                    {
+                        Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
+                        if (!world.powerups.ContainsKey(powerup!.ID))
+                        {
+                            world.powerups.Add(powerup!.ID, powerup);
+                        }
+                        else
+                        {
+                            world.powerups[powerup!.ID] = powerup;
+                        }
+
+                    }
+
 
                 }
-                else if (sentInformation.Contains("wall"))//server sent us a wall
-                {
-                    Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
-                    if (!world.walls.ContainsKey(wall!.ID))
-                    {
-                        world.walls.Add(wall!.ID, wall);;
-                    }
-                    else
-                    {
-                        world.walls[wall!.ID] = wall;
-                    }
-                   
-                  
-                }
-                else//server sent us a powerup
-                {
-                    Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
-                    if (!world.powerups.ContainsKey(powerup!.ID))
-                    {
-                        world.powerups.Add(powerup!.ID, powerup);
-                    }
-                    else
-                    {
-                        world.powerups[powerup!.ID] = powerup;
-                    }
+            }).Start();
 
-                }
-
-               
-            }
 
         }
 
