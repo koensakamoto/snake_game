@@ -5,6 +5,7 @@ using System.Text.Json;
 using GUI.Client.Models;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using System.Net.Quic;
 
 
 namespace GUI.Client.Controllers
@@ -17,9 +18,13 @@ namespace GUI.Client.Controllers
 
         private World world;
 
+        private NetworkConnection serverConnection;
+
+        public bool IsConnected{ get; private set; }
+
         public void NetworkLoop(string name)
         {
-            NetworkConnection serverConnection = new();
+            serverConnection = new();
             serverConnection.Connect("localhost", 11000);//connect to server
 
             serverConnection.Send(name);//send the name
@@ -75,6 +80,8 @@ namespace GUI.Client.Controllers
                     }
 
                 }
+
+               
             }
 
         }

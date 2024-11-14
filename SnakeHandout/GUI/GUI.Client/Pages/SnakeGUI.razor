@@ -18,46 +18,6 @@
 
 <h1>Chat Client</h1>
 
-<div id="ConnectionInputs">
-    <div class="input-row">
-        <label for="url"> Server Address: </label>
-        <input id="url" disabled="@network.IsConnected" type="text" @bind="ServerNameOrAddress" />
-        <label for="url"> Port: </label>
-        <input id="port" disabled="@network.IsConnected" type="number" @bind="ServerPort" class="port" />
-        @if (network.IsConnected)
-        {
-            <button class="btn btn-primary" @onclick="DisconnectFromServer">Disconnect</button>
-        }
-        else
-        {
-            <button class="btn btn-primary" @onclick="ConnectToServer">Connect</button>
-        }
-    </div>
-
-
-    @{
-        bool disconnected = !network.IsConnected;
-        string grayedOut = disconnected ? "grayedOut" : string.Empty;
-    }
-
-    <div class="input-row">
-        <label for="message"> Chat: </label>
-        <input id="message" class="@grayedOut" disabled="@(disconnected)" type="text" @onchange="HandleSendMessage" />
-    </div>
-    <div class="input-row">
-        <div class="input-col">
-            <div id="Messages" class="container @grayedOut">
-                @foreach (var line in AllMessages)
-                {
-                    <span class="themClass">
-                        @line
-                    </span>
-                }
-
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
@@ -70,6 +30,9 @@
     private BECanvasComponent canvasReference = null!;
     private Canvas2DContext context = null!;
     private IJSObjectReference jsModule = null!;
+    private NetworkController connection = new();
+
+
 
 
 
