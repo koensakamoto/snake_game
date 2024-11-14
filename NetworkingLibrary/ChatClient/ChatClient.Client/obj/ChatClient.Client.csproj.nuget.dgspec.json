@@ -1,25 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {}
+    "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
+    "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
         "projectName": "ChatClient.Client",
-        "projectPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
-        "packagesPath": "C:\\Users\\u1452229\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\obj\\",
+        "projectPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\ChatClient.Client.csproj",
+        "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\ChatClient\\ChatClient.Client\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\u1452229\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -34,8 +29,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {
-                "projectPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj"
+              "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj": {
+                "projectPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj"
               }
             }
           }
@@ -103,22 +98,17 @@
         }
       }
     },
-    "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj": {
+    "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj",
         "projectName": "Networking",
-        "projectPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\Networking.csproj",
-        "packagesPath": "C:\\Users\\u1452229\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\u1452229\\Source\\Repos\\game-devops\\NetworkingLibrary\\Networking\\obj\\",
+        "projectPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj",
+        "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\u1452229\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
