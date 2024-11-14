@@ -1,0 +1,111 @@
+﻿@page "/snake"
+@rendermode InteractiveServer
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas
+@using Blazor.Extensions.Canvas.Canvas2D
+@using System.Numerics
+@using System.Diagnostics
+@using System.Text.Json
+@using Models
+@using Controllers
+@inject IJSRuntime JsRuntime;
+
+<PageTitle> Snake </PageTitle>
+
+
+
+
+
+<h1>Chat Client</h1>
+
+<div id="ConnectionInputs">
+    <div class="input-row">
+        <label for="url"> Server Address: </label>
+        <input id="url" disabled="@network.IsConnected" type="text" @bind="ServerNameOrAddress" />
+        <label for="url"> Port: </label>
+        <input id="port" disabled="@network.IsConnected" type="number" @bind="ServerPort" class="port" />
+        @if (network.IsConnected)
+        {
+            <button class="btn btn-primary" @onclick="DisconnectFromServer">Disconnect</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="ConnectToServer">Connect</button>
+        }
+    </div>
+
+
+    @{
+        bool disconnected = !network.IsConnected;
+        string grayedOut = disconnected ? "grayedOut" : string.Empty;
+    }
+
+    <div class="input-row">
+        <label for="message"> Chat: </label>
+        <input id="message" class="@grayedOut" disabled="@(disconnected)" type="text" @onchange="HandleSendMessage" />
+    </div>
+    <div class="input-row">
+        <div class="input-col">
+            <div id="Messages" class="container @grayedOut">
+                @foreach (var line in AllMessages)
+                {
+                    <span class="themClass">
+                        @line
+                    </span>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="snakeCanvas" style="position: fixed; width: 100%; height: 100%">
+    <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
+</div>
+
+@code
+{
+    private BECanvasComponent canvasReference = null!;
+    private Canvas2DContext context = null!;
+    private IJSObjectReference jsModule = null!;
+
+
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
+    {
+        if ( firstRender )
+        {
+            jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>( "import", "./Pages/SnakeGUI.razor.js" );
+            context = await canvasReference.CreateCanvas2DAsync();
+            await JsRuntime.InvokeAsync<object>( "initRenderJS", DotNetObjectReference.Create( this ) );
+
+            NetworkController networkController = new();
+            networkController.NetworkLoop("Test");
+
+
+            // TODO: Start the game loop
+
+            // in the meantime, draw something to initialize the canvas
+            // you may want to remove this after you are drawing something
+            await context.SetFillStyleAsync( "lightblue" );
+            await context.FillRectAsync( 0, 0, 1000, 1000 );
+        }
+    }
+
+
+
+    [JSInvokable]
+    public void HandleKeyPress( string key )
+    {
+        // TODO: Once the client is connected and the handshake is complete,
+        //       invoke some controller method to send the appropriate command to the server
+
+
+        // TODO: Remove this, which is just here to show you what the 'key' string is for whatever key you pressed
+        Debug.WriteLine("key pressed: " + key);
+    }
+
+}
+

@@ -14,7 +14,7 @@
         <input id="url" disabled="@network.IsConnected" type="text" @bind="ServerNameOrAddress" />
         <label for="url"> Port: </label>
         <input id="port" disabled="@network.IsConnected" type="number" @bind="ServerPort" class="port" />
-        @if ( network.IsConnected )
+        @if (network.IsConnected)
         {
             <button class="btn btn-primary" @onclick="DisconnectFromServer">Disconnect</button>
         }
@@ -37,11 +37,17 @@
     <div class="input-row">
         <div class="input-col">
             <div id="Messages" class="container @grayedOut">
-                @foreach ( var line in AllMessages )
-                {
-                    <span class="themClass">
-                        @line
-                    </span>
+                @{
+                    lock (AllMessages)
+                    {
+
+                        foreach (var line in AllMessages)
+                        {
+                            <span class="themClass">
+                                @line
+                            </span>
+                        }
+                    }
                 }
 
             </div>
@@ -72,9 +78,10 @@
     /// </summary>
     private string MessageDisplayTextAreaData
     {
+
         get
         {
-            return string.Join( "\n", AllMessages );
+            return string.Join("\n", AllMessages);
         }
     }
 
@@ -99,37 +106,46 @@
     /// </summary>
     private void ConnectToServer()
     {
+
         try
         {
-            network.Connect( ServerNameOrAddress, ServerPort );
+            network.Connect(ServerNameOrAddress, ServerPort);
 
-            // Communicating with the server needs to be asynchronous so that the UI thread 
+            // Communicating with the server needs to be asynchronous so that the UI thread
             // can continue drawing.
-            new Thread( () =>
+            new Thread(() =>
             {
-                while ( network.IsConnected )
+                while (network.IsConnected)
                 {
                     try
                     {
                         var message = network.ReadLine();
 
                         message = $"{DateTime.Now:HH:mm tt} - {message}";
-                        AllMessages.Insert( 0, message );
 
-                        // Since we are changing the UI from another thread, we need to 
+                        lock (AllMessages)
+                        {
+                            AllMessages.Insert(0, message);
+                        }
+
+                        // Since we are changing the UI from another thread, we need to
                         // use the dispatcher for StateHasChanged
-                        InvokeAsync( () => StateHasChanged() );
+                        InvokeAsync(() => StateHasChanged());
                     }
                     catch
                     {
                         AllMessages.Insert(0, "Disconnection");
                     }
                 }
-            } ).Start();
+
+            }).Start();
         }
         catch
         {
-            AllMessages.Insert(0, "Error while trying to connect");
+            lock (AllMessages)
+            {
+                AllMessages.Insert(0, "Error while trying to connect");
+            }
         }
 
     }
@@ -139,11 +155,11 @@
     ///   to the server.
     /// </summary>
     /// <param name="e"> Event data containing the message. </param>
-    private void HandleSendMessage( ChangeEventArgs e )
+    private void HandleSendMessage(ChangeEventArgs e)
     {
-        if ( e.Value != null )
+        if (e.Value != null)
         {
-            network.Send( $"{e.Value}" );
+            network.Send($"{e.Value}");
         }
     }
 
