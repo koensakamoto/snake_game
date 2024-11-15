@@ -43,7 +43,7 @@
             await JsRuntime.InvokeAsync<object>( "initRenderJS", DotNetObjectReference.Create( this ) );
 
             NetworkController networkController = new();
-            networkController.NetworkLoop("Test");
+            networkController.NetworkLoop("Test"); // make async
 
 
             // TODO: Start the game loop

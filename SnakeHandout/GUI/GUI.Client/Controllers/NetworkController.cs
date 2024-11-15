@@ -6,6 +6,7 @@ using GUI.Client.Models;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using System.Net.Quic;
+using System.Diagnostics;
 
 
 namespace GUI.Client.Controllers
@@ -18,25 +19,33 @@ namespace GUI.Client.Controllers
 
         private World world;
 
-        private NetworkConnection serverConnection;
+        private NetworkConnection serverConnection = new();
 
-        public bool IsConnected{ get; private set; }
+        public bool IsConnected { get {
+                return serverConnection.IsConnected;
+            } }
 
         public void NetworkLoop(string name)
         {
-            serverConnection = new();
             serverConnection.Connect("localhost", 11000);//connect to server
+
+            if (serverConnection.IsConnected)
+            {
+                Debug.WriteLine("successful connection"); //delete later
+            }
 
             serverConnection.Send(name);//send the name
 
 
             thisID = int.Parse(serverConnection.ReadLine());//player id
 
+            Debug.WriteLine(thisID); //delete later
+
             worldSize = int.Parse(serverConnection.ReadLine());
 
             world = new World(worldSize);
 
-            new Thread(() =>
+            //new Thread(() =>
             {
                 while (true)
                 {
@@ -46,11 +55,7 @@ namespace GUI.Client.Controllers
                     if (sentInformation.Contains("snake"))//server sent us a snake
                     {
                         Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
-                        if (!world.snakes.ContainsKey(snake!.ID))
-                        {
-                            world.snakes.Add(snake!.ID, snake);
-                        }
-                        else
+                        if (!world.snakes.TryAdd(snake!.ID, snake))
                         {
                             world.snakes[snake!.ID] = snake;
                         }
@@ -59,34 +64,27 @@ namespace GUI.Client.Controllers
                     else if (sentInformation.Contains("wall"))//server sent us a wall
                     {
                         Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
-                        if (!world.walls.ContainsKey(wall!.ID))
-                        {
-                            world.walls.Add(wall!.ID, wall); ;
-                        }
-                        else
+                        if (world.walls.TryAdd(wall!.ID, wall))
                         {
                             world.walls[wall!.ID] = wall;
                         }
-
-
                     }
                     else//server sent us a powerup
                     {
                         Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
-                        if (!world.powerups.ContainsKey(powerup!.ID))
-                        {
-                            world.powerups.Add(powerup!.ID, powerup);
-                        }
-                        else
+                        if (!world.powerups.TryAdd(powerup!.ID, powerup))
                         {
                             world.powerups[powerup!.ID] = powerup;
                         }
 
                     }
 
-
+                    //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                    //{
+                    //    WriteIndented = true
+                    //})); //used to write our world to debug
                 }
-            }).Start();
+            }//).Start();
 
 
         }
