@@ -1,4 +1,4 @@
-﻿@page "/snake"
+﻿﻿@page "/snake"
 @rendermode InteractiveServer
 @using Blazor.Extensions
 @using Blazor.Extensions.Canvas
@@ -15,25 +15,9 @@
 <h1>Chat Client</h1>
 
 
-<div id="ConnectionInputs">
-    <div class="input-row">
-        <label for="url"> Name:</label>
-        <input id="url" disabled="@network.IsConnected" type="text" @bind="Name"/>
-        <label for="url"> Server Address: </label>
-        <input id="url" disabled="@network.IsConnected" type="text" @bind="ServerNameOrAddress" />
-        <label for="url"> Port: </label>
-        <input id="port" disabled="@network.IsConnected" type="number" @bind="ServerPort" class="port" />
-        @if (network.IsConnected)
-        {
-            <button class="btn btn-primary" @onclick="network.DisconnectFromServer">Disconnect</button>
-        }
-        else
-        {
-            <button class="btn btn-primary" @onclick="()=>network.NetworkLoop(ServerNameOrAddress, ServerPort, Name)">Connect</button>
-        }
-    </div>
-</div>
-    
+
+
+
 
 <div id="snakeCanvas" style="position: fixed; width: 100%; height: 100%">
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
@@ -44,127 +28,37 @@
     private BECanvasComponent canvasReference = null!;
     private Canvas2DContext context = null!;
     private IJSObjectReference jsModule = null!;
-
-    private NetworkController network = new();
-
-
-    private string ServerNameOrAddress = "localhost";
-
-    private int ServerPort = 11000;
-
-    private string Name = string.Empty;
-
-    private World thisWorld = new(0);
+    private NetworkController connection = new();
 
 
-    /// <summary>
-    /// C# reference to the html element for the background image
-    /// </summary>
-    private ElementReference backgroundImage;
 
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
     {
-        if (firstRender)
+        if ( firstRender )
         {
-            jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/SnakeGUI.razor.js");
+            jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>( "import", "./Pages/SnakeGUI.razor.js" );
             context = await canvasReference.CreateCanvas2DAsync();
-            await JsRuntime.InvokeAsync<object>("initRenderJS", DotNetObjectReference.Create(this));
+            await JsRuntime.InvokeAsync<object>( "initRenderJS", DotNetObjectReference.Create( this ) );
 
-           await network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
+            NetworkController networkController = new();
+            networkController.NetworkLoop("Test"); // make async
 
-            //drawing while we wait for GameLoop
-            await context.SetFillStyleAsync("light blue");
-            await context.FillRectAsync(0, 0, 1000, 1000);
 
-            while (network.IsConnected)
-            {
-                thisWorld = network.copyWorld();
-                GameLoop();
-            }
+            // TODO: Start the game loop
 
-            //something on disconnect?
-
-           
+            // in the meantime, draw something to initialize the canvas
+            // you may want to remove this after you are drawing something
+            await context.SetFillStyleAsync( "lightblue" );
+            await context.FillRectAsync( 0, 0, 1000, 1000 );
         }
-    }
-
-
-    /// <summary>
-    /// Renders the view once every 20 milliseconds (50 frames/second)
-    /// </summary>
-    private async void GameLoop()
-    {
-        while (true)
-        {
-            Thread.Sleep(20);
-            await DrawFrame();
-        }
-    }
-
-    /// <summary>
-    /// Draws one frame of the game
-    /// </summary>
-    /// <returns></returns>
-    private async Task DrawFrame()
-    {
-        // batch the drawing calls for better performance
-        await context.BeginBatchAsync();
-
-        // provided code ps9  
-
-        // clip the view so that objects drawn outside the canvas will not be shown
-        await context.BeginPathAsync();
-        await context.RectAsync(0, 0, 1000, 1000);
-        await context.ClipAsync();
-
-        // Because we are modifying the transformation matrix, we need to save it so we can restore it at the end
-        await context.SaveAsync();
-
-
-        // Center on origin, move to center of view port
-        await context.TranslateAsync(1000 / 2, 1000 / 2);
-        //await context.TranslateAsync(-head.X, -head.Y);
-
-        // Draw the background:
-        await context.DrawImageAsync(backgroundImage, -thisWorld.size / 2, -thisWorld.size / 2, thisWorld.size, thisWorld.size);
-        
-        await context.DrawImageAsync(backgroundImage, 0, 0, 1000, 1000);
-
-        // foreach (Snake s in copyOfWorld.snakes.Values)
-        // {
-           
-
-        //     prep to draw a circle
-        //     await context.SetLineWidthAsync(5);
-
-
-        //     draw the circle
-        //     await context.BeginPathAsync();
-        //     await context.ArcAsync(s.body.X, p.Position.Y, 10, 0, 2 * Math.PI);
-        //     await context.StrokeAsync();
-        // }
-
-        foreach (Powerup p in thisWorld.powerups.Values)
-        {
-            // smaller yellow circle for powerups
-            await context.SetLineWidthAsync(5);
-            await context.SetStrokeStyleAsync($"rgb( 255, 255, 0 )");
-            await context.BeginPathAsync();
-            await context.ArcAsync(p.location.X, p.location.Y, 3, 0, 2 * Math.PI);
-            await context.StrokeAsync();
-        }
-
-        // finish batch drawing
-        await context.EndBatchAsync();
-
-        StateHasChanged();
     }
 
 
 
     [JSInvokable]
-    public void HandleKeyPress(string key)
+    public void HandleKeyPress( string key )
     {
         // TODO: Once the client is connected and the handshake is complete,
         //       invoke some controller method to send the appropriate command to the server
@@ -173,5 +67,5 @@
         // TODO: Remove this, which is just here to show you what the 'key' string is for whatever key you pressed
         Debug.WriteLine("key pressed: " + key);
     }
-}
 
+}

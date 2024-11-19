@@ -7,27 +7,31 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using System.Net.Quic;
 using System.Diagnostics;
-using System.Net;
-using System.IO.Pipes;
-using Microsoft.AspNetCore.Components;
-using System.Security.Cryptography;
-using System.Text.Encodings.Web;
 
 
 namespace GUI.Client.Controllers
 {
     public class NetworkController
     {
+        private int thisID;
+
+        private int worldSize;
+
+        private World world;
 
         private NetworkConnection serverConnection = new();
 
-        private World world = new(0);
-
-        private int thisID { get; set; } = -1;
-
-        public async Task NetworkLoop(string host, int port, string name)
+        public bool IsConnected
         {
-            serverConnection.Connect(host, port);//connect to server
+            get
+            {
+                return serverConnection.IsConnected;
+            }
+        }
+
+        public void NetworkLoop(string name)
+        {
+            serverConnection.Connect("localhost", 11000);//connect to server
 
             if (serverConnection.IsConnected)
             {
@@ -41,13 +45,13 @@ namespace GUI.Client.Controllers
 
             Debug.WriteLine(thisID); //delete later
 
-           int worldSize = int.Parse(serverConnection.ReadLine());
+            worldSize = int.Parse(serverConnection.ReadLine());
 
             world = new World(worldSize);
-            
-            //new Thread(() => ask TA
+
+            //new Thread(() =>
             {
-                while (IsConnected)
+                while (true)
                 {
 
                     string sentInformation = serverConnection.ReadLine();
@@ -79,44 +83,19 @@ namespace GUI.Client.Controllers
 
                     }
 
-                    Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                    {
-                        WriteIndented = true
-                    })); //used to write our world to debug
+                    //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                    //{
+                    //    WriteIndented = true
+                    //})); //used to write our world to debug
                 }
             }//).Start();
 
 
         }
 
-
-        public bool IsConnected
+        public NetworkController()
         {
-            get
-            {
-                return serverConnection.IsConnected;
-            }
+
         }
-
-
-        public void DisconnectFromServer()
-        {
-            serverConnection.Disconnect();
-        }
-
-        //possibly delete
-        public World copyWorld()
-        {
-            World copyOfWorld = new(0);
-            lock (world)
-            {
-                copyOfWorld = new(world);
-            }
-            return copyOfWorld;
-        }
-
-
-
-
     }
 }
