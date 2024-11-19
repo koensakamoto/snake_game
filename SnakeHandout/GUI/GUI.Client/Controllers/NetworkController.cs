@@ -7,91 +7,128 @@ using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using System.Net.Quic;
 using System.Diagnostics;
-
+using System.Net;
+using System.IO.Pipes;
+using Microsoft.AspNetCore.Components;
+using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 
 namespace GUI.Client.Controllers
 {
     public class NetworkController
     {
-        private int thisID;
-
-        private int worldSize;
-
-        private World world;
 
         private NetworkConnection serverConnection = new();
 
-        public bool IsConnected { get {
-                return serverConnection.IsConnected;
-            } }
+        private World world = new(0);
 
-        public void NetworkLoop(string name)
+        private int thisID { get; set; } = -1;
+
+        public async Task NetworkLoop(string host, int port, string name)
         {
-            serverConnection.Connect("localhost", 11000);//connect to server
+            serverConnection.Connect(host, port);//connect to server
 
             if (serverConnection.IsConnected)
             {
                 Debug.WriteLine("successful connection"); //delete later
             }
 
-            serverConnection.Send(name);//send the name
-
-
-            thisID = int.Parse(serverConnection.ReadLine());//player id
-
-            Debug.WriteLine(thisID); //delete later
-
-            worldSize = int.Parse(serverConnection.ReadLine());
-
-            world = new World(worldSize);
-
-            //new Thread(() =>
             {
-                while (true)
+                serverConnection.Connect("localhost", 11000);//connect to server
+
+                serverConnection.Send(name);//send the name
+
+
+                thisID = int.Parse(serverConnection.ReadLine());//player id
+
+                Debug.WriteLine(thisID); //delete later
+
+                int worldSize = int.Parse(serverConnection.ReadLine());
+
+                world = new World(worldSize);
+
+                //new Thread(() => ask TA
+                worldSize = int.Parse(serverConnection.ReadLine());
+
+                world = new World(worldSize);
+
+                //new Thread(() =>
                 {
-
-                    string sentInformation = serverConnection.ReadLine();
-
-                    if (sentInformation.Contains("snake"))//server sent us a snake
+                    while (IsConnected)
                     {
-                        Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
-                        if (!world.snakes.TryAdd(snake!.ID, snake))
+
+                        string sentInformation = serverConnection.ReadLine();
+
+                        if (sentInformation.Contains("snake"))//server sent us a snake
                         {
-                            world.snakes[snake!.ID] = snake;
-                        }
+                            Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
+                            if (!world.snakes.TryAdd(snake!.ID, snake))
+                            {
+                                world.snakes[snake!.ID] = snake;
+                            }
 
-                    }
-                    else if (sentInformation.Contains("wall"))//server sent us a wall
-                    {
-                        Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
-                        if (world.walls.TryAdd(wall!.ID, wall))
+                        }
+                        else if (sentInformation.Contains("wall"))//server sent us a wall
                         {
-                            world.walls[wall!.ID] = wall;
+                            Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
+                            if (world.walls.TryAdd(wall!.ID, wall))
+                            {
+                                world.walls[wall!.ID] = wall;
+                            }
                         }
-                    }
-                    else//server sent us a powerup
-                    {
-                        Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
-                        if (!world.powerups.TryAdd(powerup!.ID, powerup))
+                        else//server sent us a powerup
                         {
-                            world.powerups[powerup!.ID] = powerup;
+                            Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
+                            if (!world.powerups.TryAdd(powerup!.ID, powerup))
+                            {
+                                world.powerups[powerup!.ID] = powerup;
+                            }
+
                         }
-
+                        Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                        {
+                            WriteIndented = true
+                        })); //used to write our world to debug
+                             //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                             //{
+                             //    WriteIndented = true
+                             //})); //used to write our world to debug
                     }
-
-                    //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                    //{
-                    //    WriteIndented = true
-                    //})); //used to write our world to debug
-                }
-            }//).Start();
+                }//).Start();
 
 
+            }
         }
 
-        public NetworkController()
+
+        public bool IsConnected
         {
-
+            get
+            {
+                return serverConnection.IsConnected;
+            }
         }
+
+
+        public void DisconnectFromServer()
+        {
+            serverConnection.Disconnect();
+        }
+
+        //possibly delete
+        public World copyWorld()
+        {
+            World copyOfWorld = new(0);
+            lock (world)
+            {
+                copyOfWorld = new(world);
+            }
+            return copyOfWorld;
+        }
+
+
+
+
     }
 }
+
