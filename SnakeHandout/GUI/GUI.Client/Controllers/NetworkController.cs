@@ -21,13 +21,9 @@ namespace GUI.Client.Controllers
 
         private NetworkConnection serverConnection = new();
 
-        public bool IsConnected
-        {
-            get
-            {
+        public bool IsConnected { get {
                 return serverConnection.IsConnected;
-            }
-        }
+            } }
 
         public void NetworkLoop(string name)
         {
