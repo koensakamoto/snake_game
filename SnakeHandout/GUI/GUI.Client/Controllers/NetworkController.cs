@@ -6,39 +6,48 @@ using GUI.Client.Models;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
 using System.Net.Quic;
+using System.Diagnostics;
+using System.Net;
+using System.IO.Pipes;
+using Microsoft.AspNetCore.Components;
+using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 
 
 namespace GUI.Client.Controllers
 {
     public class NetworkController
     {
-        private int thisID;
 
-        private int worldSize;
+        private NetworkConnection serverConnection = new();
 
-        private World world;
+        private World world = new(0);
 
-        private NetworkConnection serverConnection;
+        private int thisID { get; set; } = -1;
 
-        public bool IsConnected{ get; private set; }
-
-        public void NetworkLoop(string name)
+        public async Task NetworkLoop(string host, int port, string name)
         {
-            serverConnection = new();
-            serverConnection.Connect("localhost", 11000);//connect to server
+            serverConnection.Connect(host, port);//connect to server
+
+            if (serverConnection.IsConnected)
+            {
+                Debug.WriteLine("successful connection"); //delete later
+            }
 
             serverConnection.Send(name);//send the name
 
 
             thisID = int.Parse(serverConnection.ReadLine());//player id
 
-            worldSize = int.Parse(serverConnection.ReadLine());
+            Debug.WriteLine(thisID); //delete later
+
+           int worldSize = int.Parse(serverConnection.ReadLine());
 
             world = new World(worldSize);
-
-            new Thread(() =>
+            
+            //new Thread(() => ask TA
             {
-                while (true)
+                while (IsConnected)
                 {
 
                     string sentInformation = serverConnection.ReadLine();
@@ -46,11 +55,7 @@ namespace GUI.Client.Controllers
                     if (sentInformation.Contains("snake"))//server sent us a snake
                     {
                         Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
-                        if (!world.snakes.ContainsKey(snake!.ID))
-                        {
-                            world.snakes.Add(snake!.ID, snake);
-                        }
-                        else
+                        if (!world.snakes.TryAdd(snake!.ID, snake))
                         {
                             world.snakes[snake!.ID] = snake;
                         }
@@ -59,41 +64,59 @@ namespace GUI.Client.Controllers
                     else if (sentInformation.Contains("wall"))//server sent us a wall
                     {
                         Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
-                        if (!world.walls.ContainsKey(wall!.ID))
-                        {
-                            world.walls.Add(wall!.ID, wall); ;
-                        }
-                        else
+                        if (world.walls.TryAdd(wall!.ID, wall))
                         {
                             world.walls[wall!.ID] = wall;
                         }
-
-
                     }
                     else//server sent us a powerup
                     {
                         Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
-                        if (!world.powerups.ContainsKey(powerup!.ID))
-                        {
-                            world.powerups.Add(powerup!.ID, powerup);
-                        }
-                        else
+                        if (!world.powerups.TryAdd(powerup!.ID, powerup))
                         {
                             world.powerups[powerup!.ID] = powerup;
                         }
 
                     }
 
-
+                    Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    })); //used to write our world to debug
                 }
-            }).Start();
+            }//).Start();
 
 
         }
 
-        public NetworkController()
+
+        public bool IsConnected
         {
-
+            get
+            {
+                return serverConnection.IsConnected;
+            }
         }
+
+
+        public void DisconnectFromServer()
+        {
+            serverConnection.Disconnect();
+        }
+
+        //possibly delete
+        public World copyWorld()
+        {
+            World copyOfWorld = new(0);
+            lock (world)
+            {
+                copyOfWorld = new(world);
+            }
+            return copyOfWorld;
+        }
+
+
+
+
     }
 }
