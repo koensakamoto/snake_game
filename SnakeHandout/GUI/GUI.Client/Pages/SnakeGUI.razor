@@ -300,7 +300,7 @@
             await context.ArcAsync(powerup.location.X, powerup.location.Y, 8, 0, 2 * Math.PI);
             await context.StrokeAsync();
         }
-        
+
 
         await context.RestoreAsync();
         await context.EndBatchAsync();
@@ -325,6 +325,10 @@
     {
         network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
         GameLoop();
+    }
+
+    private void ErrorWindowClickHandler(){
+        network.resolveError();
     }
 }
 

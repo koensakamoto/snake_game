@@ -72,6 +72,11 @@ namespace GUI.Client.Controllers
            
         }
 
+        public void resolveError()
+        {
+            disconnected = false;
+        }
+
         
         public World copyWorld()
         {
