@@ -34,7 +34,7 @@ namespace GUI.Client.Controllers
             serverConnection.Connect(host, port);//connect to server
 
             {
-                serverConnection.Send(name);//send the name
+               serverConnection.Send(name);//send the name
                               
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
@@ -47,7 +47,7 @@ namespace GUI.Client.Controllers
                 handShake = true;
 
 #pragma warning disable CA1416 // Validate platform compatibility //check on Piazza
-                new Thread(UpdateWorld).Start();
+                new Thread(()=> UpdateWorld()).Start();
 #pragma warning restore CA1416 // Validate platform compatibility
             }
         }
@@ -93,7 +93,16 @@ namespace GUI.Client.Controllers
         {
             while (IsConnected)
             {
-                string sentInformation = serverConnection.ReadLine();
+                string sentInformation;
+                try
+                {
+                    sentInformation = serverConnection.ReadLine();
+                }
+                catch (Exception)
+                {
+                    disconnected = true;
+                    return;
+                }
 
                 lock (world)
                 {
@@ -156,7 +165,6 @@ namespace GUI.Client.Controllers
             {
                 controlCommand.moving = "up";
                 string jsonContent = JsonSerializer.Serialize(controlCommand);
-                //Debug.Write(jsonContent.ToString());
                 serverConnection.Send(jsonContent);
             }
 
@@ -164,14 +172,14 @@ namespace GUI.Client.Controllers
             {
                 controlCommand.moving = "down";
                 string jsonContent = JsonSerializer.Serialize(controlCommand);
-                // Debug.Write(jsonContent.ToString());
+                
                 serverConnection.Send(jsonContent);
             }
             else if (key.Equals("a"))
             {
                 controlCommand.moving = "left";
                 string jsonContent = JsonSerializer.Serialize(controlCommand);
-                //Debug.Write(jsonContent.ToString());
+                
                 serverConnection.Send(jsonContent);
             }
             else if (key.Equals("d"))
@@ -179,7 +187,7 @@ namespace GUI.Client.Controllers
                 {
                     controlCommand.moving = "right";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
-                    // Debug.Write(jsonContent.ToString());
+                   
                     serverConnection.Send(jsonContent);
                 }
             }

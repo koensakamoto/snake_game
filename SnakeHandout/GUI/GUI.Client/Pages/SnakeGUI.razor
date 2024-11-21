@@ -26,7 +26,7 @@
         }
         else
         {
-            <button class="btn btn-primary" @onclick="Connect">Connect</button>
+            <button class="btn btn-primary" disabled="@network.disconnected" @onclick="Connect">Connect</button>
         }
     </div>
 </div>
@@ -191,9 +191,9 @@
         await context.SaveAsync();
 
         // Get this snake head point
-        Snake? thisSnake = new();
+        Snake thisSnake = new();
         Point2D head = new();
-        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake))
+        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake!))
         {
             int length = thisSnake.body.Count;
             head = thisSnake.body[length - 1];
@@ -205,6 +205,8 @@
 
         //Draw the background:
         await context.DrawImageAsync(backgroundImage, -copyOfWorld.size / 2, -copyOfWorld.size / 2, copyOfWorld.size, copyOfWorld.size);
+
+
 
         //Drawing the Walls
         foreach (Wall wall in copyOfWorld.walls.Values)
@@ -228,34 +230,35 @@
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
 
-            for(int pair = 0; pair < s.body.Count - 1; pair++)
+            for (int pair = 0; pair < s.body.Count - 1; pair++)
             {
+                string style = string.Empty;
                 //death animation sequence
                 if (!s.alive)
                 {
-                    await context.SetFillStyleAsync("light red"); //change colors later
-                }else
+                   style = "light red"; //change colors later
+                } else
                 {
-                    await context.SetFillStyleAsync(colorOptions[s.ID % 8]); //change colors later
+                   style = colorOptions[s.ID % 8];
                 }
 
 
-                if(s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
+                if (s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
                 {
                     //draw name
-                    //await context.StrokeTextAsync(Name, head.X-10, head.Y-10);
+                    await context.FillTextAsync(Name, head.X - 10, head.Y - 10);
 
-                    
+
                     int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
-                    int y1 = Math.  Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
+                    int y1 = Math.Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
                     int sharedX = s.body[pair].X;
-                    for(int i = y1; i <= y2; i++)
+                    for (int i = y1; i <= y2; i++)
                     {
                         if (true)
                         {
-                            await context.SetLineWidthAsync(5);
+                            await context.SetLineWidthAsync(1);
                             await context.BeginPathAsync();
-                            await context.SetStrokeStyleAsync(colorOptions[s.ID % 8]);
+                            await context.SetStrokeStyleAsync(style);
                             await context.ArcAsync(sharedX, i, 5, 0, 2 * Math.PI);
                             await context.StrokeAsync();
                         }
@@ -276,9 +279,9 @@
                     {
                         if (true)
                         {
-                            await context.SetLineWidthAsync(5);
+                            await context.SetLineWidthAsync(1);
                             await context.BeginPathAsync();
-                            await context.SetStrokeStyleAsync(colorOptions[s.ID % 8]);
+                            await context.SetStrokeStyleAsync(style);
                             await context.ArcAsync(i, sharedY, 5, 0, 2 * Math.PI);
                             await context.StrokeAsync();
                         }
@@ -307,11 +310,18 @@
             await context.StrokeAsync();
         }
 
+        //Draw Score //how to draw in corner
+        if (thisSnake is not null)
+        {
+            await context.FillTextAsync($"Score: {thisSnake!.score}", 0, 0);
+        }
+
 
         await context.RestoreAsync();
         await context.EndBatchAsync();
 
         StateHasChanged();
+
     }
 
 
@@ -329,6 +339,7 @@
     /// </summary>
     private void Connect()
     {
+        
         network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
         GameLoop();
     }
