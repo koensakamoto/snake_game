@@ -33,7 +33,7 @@
 
 
 <img @ref="backgroundImage" id="bgImage" src="images/Background.png" alt="image" style="display:none;" />
-<img @ref="backgroundImage2" id="bgImage2" src="images/WallSprite.png" alt="image" style="display:none;" />
+<img @ref="wallSprite" id="bgImage2" src="images/WallSprite.png" alt="image" style="display:none;" />
 
 <div id="snakeCanvas" style="position: fixed; width: 100%; height: 100%">
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
@@ -45,22 +45,41 @@
     private Canvas2DContext context = null!;
     private IJSObjectReference jsModule = null!;
 
-    private NetworkController network = new();
+    /// <summary>
+    /// variable representing communication with controller
+    /// </summary>
+    private NetworkController network = new(); //instance of controller class
 
-
-    private string ServerNameOrAddress = "localhost";
-
-    private int ServerPort = 11000;
-
+    /// <summary>
+    /// Server name/address used for connection
+    /// </summary>
+    private string ServerNameOrAddress = "localhost"; //default server address
+    /// <summary>
+    /// server port
+    /// </summary>
+    private int ServerPort = 11000; //default port
+    /// <summary>
+    /// name of player, where default is emtpy
+    /// </summary>
     private string Name = string.Empty;
-
+    /// <summary>
+    /// instance of World class representing this world
+    /// </summary>
     private World thisWorld = new(0);
+    /// <summary>
+    /// default value representing view (canvas) width
+    /// </summary>
+    private const int ViewWidth = 1000;
+    /// <summary>
+    /// default value representing view (canvas) height
+    /// </summary>
+    private const int ViewHeight = 1000;
 
-    private int ViewWidth = 1000;
 
-    private int ViewHeight = 1000;
-
-    private String[] colorOptions = { "white", "blue", "green", "purple", "orange", "pink", "brown", "yellow" };
+    /// <summary>
+    /// default options for the colors of snakes, where first player is white, second player is blue, etc.
+    /// </summary>
+    private String[] colorOptions = { "white", "blue", "green", "purple", "orange", "pink", "brown", "yellow" }; //make this const?
 
 
     /// <summary>
@@ -68,7 +87,10 @@
     /// </summary>
     private ElementReference backgroundImage;
 
-    private ElementReference backgroundImage2;
+    /// <summary>
+    /// c# reference to the html element for the wallsprites
+    /// </summary>
+    private ElementReference wallSprite;
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -78,21 +100,8 @@
             jsModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/SnakeGUI.razor.js");
             context = await canvasReference.CreateCanvas2DAsync();
             await JsRuntime.InvokeAsync<object>("initRenderJS", DotNetObjectReference.Create(this));
-
-            // await network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
-            // NetworkController networkController = new();
-            // await networkController.NetworkLoop(ServerNameOrAddress, ServerPort, Name); make async
-
-            // drawing while we wait for GameLoop
-            // await context.SetFillStyleAsync("light blue");
-            // await context.FillRectAsync(0, 0, 1000, 1000);
-
-            // while (network.IsConnected)
-            // {
-            //     thisWorld = network.copyWorld();
-            //     GameLoop();
-            // }
         }
+            
     }
 
 
@@ -112,12 +121,8 @@
 
     private async Task DrawFrame()
     {
-        World copyOfWorld;
-        lock (network.world)
-        {
-            copyOfWorld = new World(network.world);
-        }
-
+        World copyOfWorld = network.copyWorld();//get network's copy of world
+       
         await context.BeginBatchAsync();
 
         await context.SetFillStyleAsync("light blue");
@@ -160,7 +165,7 @@
             {
                 for (int y = startY; y <= endY; y += 50)
                 {
-                    await context.DrawImageAsync(backgroundImage2, x - 25, y - 25, 50, 50);
+                    await context.DrawImageAsync(wallSprite, x - 25, y - 25, 50, 50);
                 }
             }
         }
@@ -178,7 +183,7 @@
                 {
                     await context.SetFillStyleAsync(colorOptions[s.ID % 8]); //change colors later
                 }
-               
+
 
                 if(s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
                 {
@@ -202,9 +207,9 @@
                 }
             }
 
-                
-               
-            
+
+
+
         }
 
         foreach (Powerup powerup in copyOfWorld.powerups.Values)
@@ -232,6 +237,9 @@
         }
     }
 
+    /// <summary>
+    /// Handles click of the network button
+    /// </summary>
     private void Connect()
     {
         network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);

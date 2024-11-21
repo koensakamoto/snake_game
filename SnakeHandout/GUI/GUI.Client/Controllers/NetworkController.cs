@@ -20,9 +20,7 @@ namespace GUI.Client.Controllers
 
         private NetworkConnection serverConnection = new();
 
-        private World world2 = new(0);
-
-        public World world { get; private set; }
+        private World world = new(0);
 
         public int thisID { get; private set; } = -1;
 
@@ -33,28 +31,22 @@ namespace GUI.Client.Controllers
         {
             serverConnection.Connect(host, port);//connect to server
 
-            if (serverConnection.IsConnected)
-            {
-               // Debug.WriteLine("successful connection"); //delete later
-            }
-
             {
                 serverConnection.Send(name);//send the name
-                                            //  Debug.WriteLine(name);
+                              
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
-                                                                //  Debug.WriteLine(thisID.ToString());
-
-                //  Debug.WriteLine(thisID); //delete later
+                                                                
 
                 int worldSize = int.Parse(serverConnection.ReadLine());
-                //  Debug.WriteLine(worldSize);
-
+               
                 world = new World(worldSize);
 
                 handShake = true;
 
+#pragma warning disable CA1416 // Validate platform compatibility //check on Piazza
                 new Thread(UpdateWorld).Start();
+#pragma warning restore CA1416 // Validate platform compatibility
             }
         }
 
@@ -70,10 +62,15 @@ namespace GUI.Client.Controllers
 
         public void DisconnectFromServer()
         {
-            serverConnection?.Disconnect();
+            try { serverConnection?.Disconnect(); }
+            catch (Exception)
+            {
+                
+            }
+           
         }
 
-        //possibly delete
+        
         public World copyWorld()
         {
             World copyOfWorld = new(0);
@@ -138,10 +135,6 @@ namespace GUI.Client.Controllers
                         }
                     }
                 }
-                //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                //{
-                //    WriteIndented = true
-                //})); //used to write our world to debug
             }
         }
 
