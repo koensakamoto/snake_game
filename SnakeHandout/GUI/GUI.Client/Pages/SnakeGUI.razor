@@ -12,9 +12,6 @@
 
 <PageTitle> Snake </PageTitle>
 
-<h1>Chat Client</h1>
-
-
 <div id="ConnectionInputs">
     <div class="input-row">
         <label for="url"> Name:</label>
@@ -29,11 +26,14 @@
         }
         else
         {
-            <button class="btn btn-primary" @onclick="()=>network.NetworkLoop(ServerNameOrAddress, ServerPort, Name)">Connect</button>
+            <button class="btn btn-primary" @onclick="Connect">Connect</button>
         }
     </div>
 </div>
 
+
+<img @ref="backgroundImage" id="bgImage" src="images/Background.png" alt="image" style="display:none;" />
+<img @ref="backgroundImage2" id="bgImage2" src="images/WallSprite.png" alt="image" style="display:none;" />
 
 <div id="snakeCanvas" style="position: fixed; width: 100%; height: 100%">
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
@@ -56,11 +56,19 @@
 
     private World thisWorld = new(0);
 
+    private int ViewWidth = 1000;
+
+    private int ViewHeight = 1000;
+
+    private String[] colorOptions = { "white", "blue", "green", "purple", "orange", "pink", "brown", "yellow" };
+
 
     /// <summary>
     /// C# reference to the html element for the background image
     /// </summary>
     private ElementReference backgroundImage;
+
+    private ElementReference backgroundImage2;
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -71,23 +79,19 @@
             context = await canvasReference.CreateCanvas2DAsync();
             await JsRuntime.InvokeAsync<object>("initRenderJS", DotNetObjectReference.Create(this));
 
-            await network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
-            NetworkController networkController = new();
-            await networkController.NetworkLoop(ServerNameOrAddress, ServerPort, Name); // make async
+            // await network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
+            // NetworkController networkController = new();
+            // await networkController.NetworkLoop(ServerNameOrAddress, ServerPort, Name); make async
 
-            //drawing while we wait for GameLoop
-            await context.SetFillStyleAsync("light blue");
-            await context.FillRectAsync(0, 0, 1000, 1000);
+            // drawing while we wait for GameLoop
+            // await context.SetFillStyleAsync("light blue");
+            // await context.FillRectAsync(0, 0, 1000, 1000);
 
-            while (network.IsConnected)
-            {
-                thisWorld = network.copyWorld();
-                GameLoop();
-            }
-
-            //something on disconnect?
-
-
+            // while (network.IsConnected)
+            // {
+            //     thisWorld = network.copyWorld();
+            //     GameLoop();
+            // }
         }
     }
 
@@ -97,83 +101,141 @@
     /// </summary>
     private async void GameLoop()
     {
-        while (true)
+        while (network.IsConnected)
         {
-            Thread.Sleep(20);
+            // Thread.Sleep(20);
             await DrawFrame();
         }
     }
 
-    /// <summary>
-    /// Draws one frame of the game
-    /// </summary>
-    /// <returns></returns>
+
+
     private async Task DrawFrame()
     {
-        // batch the drawing calls for better performance
+        World copyOfWorld;
+        lock (network.world)
+        {
+            copyOfWorld = new World(network.world);
+        }
+
         await context.BeginBatchAsync();
 
-        // provided code ps9
+        await context.SetFillStyleAsync("light blue");
+        await context.FillRectAsync(0, 0, 1000, 1000);
 
         // clip the view so that objects drawn outside the canvas will not be shown
         await context.BeginPathAsync();
-        await context.RectAsync(0, 0, 1000, 1000);
+        // await context.ClearRectAsync();
+        await context.RectAsync(0, 0, ViewWidth, ViewHeight);
         await context.ClipAsync();
 
         // Because we are modifying the transformation matrix, we need to save it so we can restore it at the end
         await context.SaveAsync();
 
+        // Get this snake head point
+        Snake? thisSnake = new();
+        Point2D head = new();
+        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake))
+        {
+            int length = thisSnake.body.Count;
+            head = thisSnake.body[length - 1];
+        }
 
         // Center on origin, move to center of view port
-        await context.TranslateAsync(1000 / 2, 1000 / 2);
-        //await context.TranslateAsync(-head.X, -head.Y);
+        await context.TranslateAsync(ViewWidth / 2, ViewHeight / 2);
+        await context.TranslateAsync(-head.X, -head.Y);
 
-        // Draw the background:
-        await context.DrawImageAsync(backgroundImage, -thisWorld.size / 2, -thisWorld.size / 2, thisWorld.size, thisWorld.size);
+        //Draw the background:
+        await context.DrawImageAsync(backgroundImage, -copyOfWorld.size / 2, -copyOfWorld.size / 2, copyOfWorld.size, copyOfWorld.size);
 
-        await context.DrawImageAsync(backgroundImage, 0, 0, 1000, 1000);
-
-        // foreach (Snake s in copyOfWorld.snakes.Values)
-        // {
-
-
-        //     prep to draw a circle
-        //     await context.SetLineWidthAsync(5);
-
-
-        //     draw the circle
-        //     await context.BeginPathAsync();
-        //     await context.ArcAsync(s.body.X, p.Position.Y, 10, 0, 2 * Math.PI);
-        //     await context.StrokeAsync();
-        // }
-
-        foreach (Powerup p in thisWorld.powerups.Values)
+        foreach (Wall wall in copyOfWorld.walls.Values)
         {
-            // smaller yellow circle for powerups
+            int startX = Math.Min(wall.point1.X, wall.point2.X);
+            int startY = Math.Min(wall.point1.Y, wall.point2.Y);
+            int endX = Math.Max(wall.point1.X, wall.point2.X);
+            int endY = Math.Max(wall.point1.Y, wall.point2.Y);
+
+            // Draw the wall in segments
+            for (int x = startX; x <= endX; x += 50)
+            {
+                for (int y = startY; y <= endY; y += 50)
+                {
+                    await context.DrawImageAsync(backgroundImage2, x - 25, y - 25, 50, 50);
+                }
+            }
+        }
+
+
+        foreach (Snake s in copyOfWorld.snakes.Values)
+        {
+
+            for(int pair = 0; pair < s.body.Count - 1; pair++)
+            {
+                if (!s.alive)
+                {
+                    await context.SetFillStyleAsync("light red"); //change colors later
+                }else
+                {
+                    await context.SetFillStyleAsync(colorOptions[s.ID % 8]); //change colors later
+                }
+               
+
+                if(s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
+                {
+                    int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
+                    int y1 = Math.  Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
+                    int sharedX = s.body[pair].X;
+                    for(int i = y1; i <= y2; i++)//possibly change += 16
+                    {
+                        await context.FillRectAsync(sharedX - 5, i - 5, 10, 10);
+                    }
+                }
+                else//y's are equal, segment is horizontal
+                {
+                    int x2 = Math.Max(s.body[pair].X, s.body[pair + 1].X);
+                    int x1 = Math.Min(s.body[pair].X, s.body[pair + 1].X);//y2 is the lesser of the two y values
+                    int sharedY = s.body[pair].Y;
+                    for (int i = x1; i <= x2; i++)//possibly change += 16
+                    {
+                        await context.FillRectAsync(i - 5, sharedY - 5, 10, 10);
+                    }
+                }
+            }
+
+                
+               
+            
+        }
+
+        foreach (Powerup powerup in copyOfWorld.powerups.Values)
+        {
             await context.SetLineWidthAsync(5);
             await context.SetStrokeStyleAsync($"rgb( 255, 255, 0 )");
             await context.BeginPathAsync();
-            await context.ArcAsync(p.location.X, p.location.Y, 3, 0, 2 * Math.PI);
+            await context.ArcAsync(powerup.location.X, powerup.location.Y, 5, 0, 2 * Math.PI);
             await context.StrokeAsync();
         }
 
-        // finish batch drawing
+        await context.RestoreAsync();
         await context.EndBatchAsync();
 
         StateHasChanged();
     }
 
 
-
     [JSInvokable]
     public void HandleKeyPress(string key)
     {
-        // TODO: Once the client is connected and the handshake is complete,
-        //       invoke some controller method to send the appropriate command to the server
+        if (network.IsConnected && network.handShake)
+        {
+            network.sendGameCommands(key);
+        }
+    }
 
-
-        // TODO: Remove this, which is just here to show you what the 'key' string is for whatever key you pressed
-        Debug.WriteLine("key pressed: " + key);
+    private void Connect()
+    {
+        network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
+        GameLoop();
     }
 }
 

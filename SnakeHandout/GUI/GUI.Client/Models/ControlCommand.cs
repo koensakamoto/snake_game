@@ -9,7 +9,7 @@ namespace GUI.Client.Models
 
         public ControlCommand()
         {
-
+            moving = string.Empty; ;
         }
 
     }

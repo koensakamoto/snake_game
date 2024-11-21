@@ -20,83 +20,41 @@ namespace GUI.Client.Controllers
 
         private NetworkConnection serverConnection = new();
 
-        private World world = new(0);
+        private World world2 = new(0);
 
-        private int thisID { get; set; } = -1;
+        public World world { get; private set; }
 
-        public async Task NetworkLoop(string host, int port, string name)
+        public int thisID { get; private set; } = -1;
+
+        public bool handShake { get; private set; }
+
+
+        public void NetworkLoop(string host, int port, string name)
         {
             serverConnection.Connect(host, port);//connect to server
 
             if (serverConnection.IsConnected)
             {
-                Debug.WriteLine("successful connection"); //delete later
+               // Debug.WriteLine("successful connection"); //delete later
             }
 
             {
-                serverConnection.Connect("localhost", 11000);//connect to server
-
                 serverConnection.Send(name);//send the name
-
+                                            //  Debug.WriteLine(name);
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
+                                                                //  Debug.WriteLine(thisID.ToString());
 
-                Debug.WriteLine(thisID); //delete later
+                //  Debug.WriteLine(thisID); //delete later
 
                 int worldSize = int.Parse(serverConnection.ReadLine());
+                //  Debug.WriteLine(worldSize);
 
                 world = new World(worldSize);
 
-                //new Thread(() => ask TA
-                worldSize = int.Parse(serverConnection.ReadLine());
+                handShake = true;
 
-                world = new World(worldSize);
-
-                //new Thread(() =>
-                {
-                    while (IsConnected)
-                    {
-
-                        string sentInformation = serverConnection.ReadLine();
-
-                        if (sentInformation.Contains("snake"))//server sent us a snake
-                        {
-                            Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
-                            if (!world.snakes.TryAdd(snake!.ID, snake))
-                            {
-                                world.snakes[snake!.ID] = snake;
-                            }
-
-                        }
-                        else if (sentInformation.Contains("wall"))//server sent us a wall
-                        {
-                            Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
-                            if (world.walls.TryAdd(wall!.ID, wall))
-                            {
-                                world.walls[wall!.ID] = wall;
-                            }
-                        }
-                        else//server sent us a powerup
-                        {
-                            Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
-                            if (!world.powerups.TryAdd(powerup!.ID, powerup))
-                            {
-                                world.powerups[powerup!.ID] = powerup;
-                            }
-
-                        }
-                        Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                        {
-                            WriteIndented = true
-                        })); //used to write our world to debug
-                             //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                             //{
-                             //    WriteIndented = true
-                             //})); //used to write our world to debug
-                    }
-                }//).Start();
-
-
+                new Thread(UpdateWorld).Start();
             }
         }
 
@@ -112,7 +70,7 @@ namespace GUI.Client.Controllers
 
         public void DisconnectFromServer()
         {
-            serverConnection.Disconnect();
+            serverConnection?.Disconnect();
         }
 
         //possibly delete
@@ -127,8 +85,106 @@ namespace GUI.Client.Controllers
         }
 
 
+        private void UpdateWorld()
+        {
+            while (IsConnected)
+            {
+                string sentInformation = serverConnection.ReadLine();
+
+                lock (world)
+                {
+                    if (sentInformation.Contains("snake"))//server sent us a snake
+                    {
+                        Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
+
+                        if (!world.snakes.TryAdd(snake!.ID, snake))
+                        {
+                            world.snakes[snake!.ID] = snake;
+                        }
+
+                        if (snake.disconnected)
+                        {
+                            world.snakes.Remove(snake!.ID);
+                        }
+
+                    }
+
+                    else if (sentInformation.Contains("wall"))//server sent us a wall
+                    {
+                        Wall? wall = JsonSerializer.Deserialize<Wall>(sentInformation);
 
 
+                        if (world.walls.TryAdd(wall!.ID, wall))
+                        {
+                            world.walls[wall!.ID] = wall;
+                        }
+
+                    }
+
+
+                    else//server sent us a powerup
+                    {
+                        Powerup? powerup = JsonSerializer.Deserialize<Powerup>(sentInformation);
+
+
+                        if (!world.powerups.TryAdd(powerup!.ID, powerup))
+                        {
+                            world.powerups[powerup!.ID] = powerup;
+                        }
+
+                        if (powerup.died)
+                        {
+                            world.powerups.Remove(powerup!.ID);
+                        }
+                    }
+                }
+                //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
+                //{
+                //    WriteIndented = true
+                //})); //used to write our world to debug
+            }
+        }
+
+
+        public void sendGameCommands(string key)
+        {
+            ControlCommand controlCommand = new ControlCommand();
+
+            key = key.ToLower();
+
+            if (key.Equals("w"))
+            {
+                controlCommand.moving = "up";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+                //Debug.Write(jsonContent.ToString());
+                serverConnection.Send(jsonContent);
+            }
+
+            else if (key.Equals("s"))
+            {
+                controlCommand.moving = "down";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+                // Debug.Write(jsonContent.ToString());
+                serverConnection.Send(jsonContent);
+            }
+            else if (key.Equals("a"))
+            {
+                controlCommand.moving = "left";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+                //Debug.Write(jsonContent.ToString());
+                serverConnection.Send(jsonContent);
+            }
+            else if (key.Equals("d"))
+            {
+                {
+                    controlCommand.moving = "right";
+                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+                    // Debug.Write(jsonContent.ToString());
+                    serverConnection.Send(jsonContent);
+                }
+            }
+
+        }
     }
 }
 

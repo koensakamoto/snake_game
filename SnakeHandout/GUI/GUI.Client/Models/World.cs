@@ -29,6 +29,5 @@ namespace GUI.Client.Models
             size = world.size;
         }
 
-
     }
 }
