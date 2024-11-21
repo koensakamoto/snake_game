@@ -39,6 +39,59 @@
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
 </div>
 
+@if (network.disconnected)
+{
+    <div class=error-popup-container>
+        <h1 class="error-header">@errorWindowText</h1>
+        <btn @onclick="ErrorWindowClickHandler" class=error-button>Close Window</btn>
+    </div>
+}
+
+<style>
+    .error-popup-container {
+        width: 60%;
+        align-items: center;
+        position: fixed;
+        top: 40%;
+        left: 30%;
+        right: 10%;
+        bottom: 25%;
+        padding: 1rem 1rem 1rem 3.7rem;
+        background-color: whitesmoke;
+        border-width: thick;
+        border-color: #e83c3c;
+        border-style: solid;
+        background-position: center;
+        display: flex;
+        justify-content: center;
+        border-radius: 30px;
+    }
+
+    .error-header {
+        position: absolute;
+        right: 0%;
+        bottom: 30%;
+        text-align: center;
+        font-size: x-large;
+    }
+
+
+    .error-button {
+        position: absolute;
+        border-color: black;
+        border-style: solid;
+        border-width: medium;
+        background-color: #e0dada;
+        border-radius: 20px;
+        bottom: 10%;
+        left: 40%;
+        padding: 0.5% 0.5%;
+    }
+
+</style>
+
+
+
 @code
 {
     private BECanvasComponent canvasReference = null!;
@@ -101,7 +154,7 @@
             context = await canvasReference.CreateCanvas2DAsync();
             await JsRuntime.InvokeAsync<object>("initRenderJS", DotNetObjectReference.Create(this));
         }
-            
+
     }
 
 
@@ -112,7 +165,7 @@
     {
         while (network.IsConnected)
         {
-            // Thread.Sleep(20);
+            Thread.Sleep(20);
             await DrawFrame();
         }
     }
@@ -122,7 +175,7 @@
     private async Task DrawFrame()
     {
         World copyOfWorld = network.copyWorld();//get network's copy of world
-       
+
         await context.BeginBatchAsync();
 
         await context.SetFillStyleAsync("light blue");
@@ -153,6 +206,7 @@
         //Draw the background:
         await context.DrawImageAsync(backgroundImage, -copyOfWorld.size / 2, -copyOfWorld.size / 2, copyOfWorld.size, copyOfWorld.size);
 
+        //Drawing the Walls
         foreach (Wall wall in copyOfWorld.walls.Values)
         {
             int startX = Math.Min(wall.point1.X, wall.point2.X);
@@ -170,12 +224,13 @@
             }
         }
 
-
+        //Drawing the Snakes
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
 
             for(int pair = 0; pair < s.body.Count - 1; pair++)
             {
+                //death animation sequence
                 if (!s.alive)
                 {
                     await context.SetFillStyleAsync("light red"); //change colors later
@@ -190,9 +245,20 @@
                     int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
                     int y1 = Math.  Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
                     int sharedX = s.body[pair].X;
-                    for(int i = y1; i <= y2; i++)//possibly change += 16
+                    for(int i = y1; i <= y2; i++)
                     {
-                        await context.FillRectAsync(sharedX - 5, i - 5, 10, 10);
+                        if (s.)
+                        {
+                            await context.SetLineWidthAsync(5);
+                            await context.BeginPathAsync();
+                            await context.SetStrokeStyleAsync(colorOptions[s.ID % 8]);
+                            await context.ArcAsync(sharedX, i, 5, 0, 2 * Math.PI);
+                            await context.StrokeAsync();
+                        }
+                        else
+                        {
+                            await context.FillRectAsync(sharedX, i, 10, 10);
+                        }
                     }
                 }
                 else//y's are equal, segment is horizontal
@@ -200,9 +266,20 @@
                     int x2 = Math.Max(s.body[pair].X, s.body[pair + 1].X);
                     int x1 = Math.Min(s.body[pair].X, s.body[pair + 1].X);//y2 is the lesser of the two y values
                     int sharedY = s.body[pair].Y;
-                    for (int i = x1; i <= x2; i++)//possibly change += 16
+                    for (int i = x1; i <= x2; i++)
                     {
-                        await context.FillRectAsync(i - 5, sharedY - 5, 10, 10);
+                        if (i <= x1 + 5 || i >= x2 -5)
+                        {
+                            await context.SetLineWidthAsync(5);
+                            await context.BeginPathAsync();
+                            await context.SetStrokeStyleAsync(colorOptions[s.ID % 8]);
+                            await context.ArcAsync(i, sharedY, 5, 0, 2 * Math.PI);
+                            await context.StrokeAsync();
+                        }
+                        else
+                        {
+                            await context.FillRectAsync(i - 5, sharedY - 5, 10, 10);
+                        }
                     }
                 }
             }
@@ -212,14 +289,18 @@
 
         }
 
+
+        //Drawing the Powerups
         foreach (Powerup powerup in copyOfWorld.powerups.Values)
         {
             await context.SetLineWidthAsync(5);
+            //death animation sequence
             await context.SetStrokeStyleAsync($"rgb( 255, 255, 0 )");
             await context.BeginPathAsync();
-            await context.ArcAsync(powerup.location.X, powerup.location.Y, 5, 0, 2 * Math.PI);
+            await context.ArcAsync(powerup.location.X, powerup.location.Y, 8, 0, 2 * Math.PI);
             await context.StrokeAsync();
         }
+        
 
         await context.RestoreAsync();
         await context.EndBatchAsync();

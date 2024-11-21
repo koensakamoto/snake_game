@@ -26,6 +26,8 @@ namespace GUI.Client.Controllers
 
         public bool handShake { get; private set; }
 
+        public bool disconnected { get; private set; } = false;
+
 
         public void NetworkLoop(string host, int port, string name)
         {
@@ -65,7 +67,7 @@ namespace GUI.Client.Controllers
             try { serverConnection?.Disconnect(); }
             catch (Exception)
             {
-                
+                disconnected = true;
             }
            
         }
