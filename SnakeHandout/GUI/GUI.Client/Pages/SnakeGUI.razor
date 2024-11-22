@@ -39,7 +39,7 @@
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
 </div>
 
-@if (network.disconnected)
+@if (network.disconnected || network.NameError)
 {
     <div class=error-popup-container>
         <h1 class="error-header">@network.errorMessage</h1>
@@ -180,7 +180,7 @@
 
 
 
-        await context.SetFillStyleAsync("light blue");//what does this do?
+        await context.SetFillStyleAsync("blue");
         await context.FillRectAsync(0, 0, 1000, 1000);
 
 
@@ -201,7 +201,7 @@
 
 
 
-        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake!))//do we need to check this?
+        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake!))
         {
             int length = thisSnake.body.Count;
             head = thisSnake.body[length - 1];
@@ -245,9 +245,9 @@
             {
                 string style = string.Empty;
                 //death animation sequence
-                if (!s.alive)
+                if (!s.alive ||s.died)
                 {
-                    style = "light red"; //change colors later
+                    style = "red"; 
                 } else
                 {
                     style = colorOptions[s.ID % 8];
@@ -257,6 +257,7 @@
 
                 //draw name
                 Point2D snakesHead = s.body[s.body.Count - 1];
+                await context.SetFillStyleAsync("black");
                 await context.FillTextAsync($"{s.name}: {s.score}", snakesHead.X - 10, snakesHead.Y - 10);
 
                 if (s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
@@ -268,18 +269,14 @@
                     int sharedX = s.body[pair].X;
                     for (int i = y1; i <= y2; i++)
                     {
-                        if (true)
-                        {
+                        
                             await context.SetLineWidthAsync(1);
                             await context.BeginPathAsync();
                             await context.SetStrokeStyleAsync(style);
                             await context.ArcAsync(sharedX, i, 5, 0, 2 * Math.PI);
                             await context.StrokeAsync();
-                        }
-                        // else
-                        // {
-                        //     await context.FillRectAsync(sharedX, i, 10, 10);
-                        // }
+                        
+                      
                     }
                 }
                 else//y's are equal, segment is horizontal
@@ -291,18 +288,14 @@
                     int sharedY = s.body[pair].Y;
                     for (int i = x1; i <= x2; i++)
                     {
-                        if (true)
-                        {
+                        
                             await context.SetLineWidthAsync(1);
                             await context.BeginPathAsync();
                             await context.SetStrokeStyleAsync(style);
                             await context.ArcAsync(i, sharedY, 5, 0, 2 * Math.PI);
                             await context.StrokeAsync();
-                        }
-                        // else
-                        // {
-                        //     await context.FillRectAsync(i - 5, sharedY - 5, 10, 10);
-                        // }
+                      
+                        
                     }
                 }
             }
@@ -324,11 +317,6 @@
             await context.StrokeAsync();
         }
 
-        //Draw Score //how to draw in corner
-        if (thisSnake is not null)
-        {
-            await context.FillTextAsync($"Score: {thisSnake!.score}", 0, 0);
-        }
 
 
         await context.RestoreAsync();

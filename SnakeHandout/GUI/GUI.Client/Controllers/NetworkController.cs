@@ -30,13 +30,25 @@ namespace GUI.Client.Controllers
 
         public string errorMessage { get; private set; } = "101:Page Not Found";
 
+        private bool sentOnceFrame { get; set; }
+
+        public bool NameError { get; private set; }
+
 
         public void NetworkLoop(string host, int port, string name)
         {
-            serverConnection.Connect(host, port);//connect to server
+            if (name.Length > 16){
+                errorMessage = "Please re-enter your name, it needs to be less than 16 char.";
+                NameError = true;
+                return;
+            }
 
-            {
-               serverConnection.Send(name + "\n");//send the name error here?
+            serverConnection.Connect(host, port);//connect to server
+               
+            
+
+         
+               serverConnection.Send(name);
                               
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
@@ -48,10 +60,12 @@ namespace GUI.Client.Controllers
 
                 handShake = true;
 
+                sentOnceFrame = false;
+
 #pragma warning disable CA1416 
                 new Thread(()=> UpdateWorld()).Start();
 #pragma warning restore CA1416
-            }
+            
         }
 
 
@@ -92,6 +106,7 @@ namespace GUI.Client.Controllers
         public void resolveError()
         {
             disconnected = false;
+            NameError = false;
         }
 
         
@@ -114,6 +129,8 @@ namespace GUI.Client.Controllers
                 try
                 {
                     sentInformation = serverConnection.ReadLine();
+                    sentOnceFrame = false;
+
                 }
                 catch (Exception)
                 {
@@ -177,40 +194,46 @@ namespace GUI.Client.Controllers
             ControlCommand controlCommand = new ControlCommand();
 
             key = key.ToLower();
-
-            if (key.Equals("w"))
-            {
-                controlCommand.moving = "up";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                serverConnection.Send(jsonContent);
-            }
-
-            else if (key.Equals("s"))
-            {
-                controlCommand.moving = "down";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                
-                serverConnection.Send(jsonContent);
-            }
-            else if (key.Equals("a"))
-            {
-                controlCommand.moving = "left";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                
-                serverConnection.Send(jsonContent);
-            }
-            else if (key.Equals("d"))
-            {
+            
+                if (key.Equals("w"))
                 {
-                    controlCommand.moving = "right";
+                    controlCommand.moving = "up";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
-                   
                     serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+
+                else if (key.Equals("s"))
+                {
+                    controlCommand.moving = "down";
+                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                    serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+
+                else if (key.Equals("a"))
+                {
+                    controlCommand.moving = "left";
+                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                    serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+                else if (key.Equals("d"))
+                {
+                    {
+                        controlCommand.moving = "right";
+                        string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                        serverConnection.Send(jsonContent);
+                        sentOnceFrame = true;
+                    }
                 }
             }
    
 
-        }
+        
     }
 }
 
