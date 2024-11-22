@@ -178,8 +178,14 @@
 
         await context.BeginBatchAsync();
 
-        await context.SetFillStyleAsync("light blue");
+
+
+
+        await context.SetFillStyleAsync("light blue");//what does this do?
         await context.FillRectAsync(0, 0, 1000, 1000);
+
+
+
 
         // clip the view so that objects drawn outside the canvas will not be shown
         await context.BeginPathAsync();
@@ -193,11 +199,16 @@
         // Get this snake head point
         Snake thisSnake = new();
         Point2D head = new();
-        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake!))
+
+
+
+        if (copyOfWorld.snakes.TryGetValue(network.thisID, out thisSnake!))//do we need to check this?
         {
             int length = thisSnake.body.Count;
             head = thisSnake.body[length - 1];
         }
+
+
 
         // Center on origin, move to center of view port
         await context.TranslateAsync(ViewWidth / 2, ViewHeight / 2);
@@ -211,6 +222,7 @@
         //Drawing the Walls
         foreach (Wall wall in copyOfWorld.walls.Values)
         {
+            //find lower and upper x and y values of wall segment
             int startX = Math.Min(wall.point1.X, wall.point2.X);
             int startY = Math.Min(wall.point1.Y, wall.point2.Y);
             int endX = Math.Max(wall.point1.X, wall.point2.X);
@@ -229,25 +241,28 @@
         //Drawing the Snakes
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
-
+            //treating two points in the body as a line segment
             for (int pair = 0; pair < s.body.Count - 1; pair++)
             {
                 string style = string.Empty;
                 //death animation sequence
                 if (!s.alive)
                 {
-                   style = "light red"; //change colors later
+                    style = "light red"; //change colors later
                 } else
                 {
-                   style = colorOptions[s.ID % 8];
+                    style = colorOptions[s.ID % 8];
                 }
 
 
+
+                //draw name
+                Point2D snakesHead = s.body[s.body.Count - 1];
+                await context.FillTextAsync($"{s.name}: {s.score}", snakesHead.X - 10, snakesHead.Y - 10);
+
                 if (s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
                 {
-                    //draw name
-                    await context.FillTextAsync(Name, head.X - 10, head.Y - 10);
-
+                   
 
                     int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
                     int y1 = Math.Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
@@ -270,7 +285,7 @@
                 }
                 else//y's are equal, segment is horizontal
                 {
-                    //draw name
+                    
 
                     int x2 = Math.Max(s.body[pair].X, s.body[pair + 1].X);
                     int x1 = Math.Min(s.body[pair].X, s.body[pair + 1].X);//y2 is the lesser of the two y values
@@ -330,7 +345,7 @@
     {
         if (network.IsConnected && network.handShake)
         {
-            network.sendGameCommands(key);
+            new Thread(()=> network.sendGameCommands(key)).Start();//possible fix
         }
     }
 

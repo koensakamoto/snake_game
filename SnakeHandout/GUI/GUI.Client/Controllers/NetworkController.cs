@@ -34,7 +34,7 @@ namespace GUI.Client.Controllers
             serverConnection.Connect(host, port);//connect to server
 
             {
-               serverConnection.Send(name);//send the name
+               serverConnection.Send(name);//send the name error here?
                               
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
@@ -191,6 +191,7 @@ namespace GUI.Client.Controllers
                     serverConnection.Send(jsonContent);
                 }
             }
+   
 
         }
     }
