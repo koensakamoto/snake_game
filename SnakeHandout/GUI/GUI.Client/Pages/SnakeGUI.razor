@@ -42,7 +42,7 @@
 @if (network.disconnected)
 {
     <div class=error-popup-container>
-        <h1 class="error-header">For some reason, you were disconnected from the server :(</h1>
+        <h1 class="error-header">@network.errorMessage</h1>
         <btn @onclick="ErrorWindowClickHandler" class=error-button>Close Window</btn>
     </div>
 }
@@ -69,7 +69,6 @@
 
     .error-header {
         position: absolute;
-        right: 0%;
         bottom: 30%;
         text-align: center;
         font-size: x-large;
@@ -262,7 +261,7 @@
 
                 if (s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
                 {
-                   
+
 
                     int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
                     int y1 = Math.Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
@@ -285,7 +284,7 @@
                 }
                 else//y's are equal, segment is horizontal
                 {
-                    
+
 
                     int x2 = Math.Max(s.body[pair].X, s.body[pair + 1].X);
                     int x1 = Math.Min(s.body[pair].X, s.body[pair + 1].X);//y2 is the lesser of the two y values
@@ -354,9 +353,15 @@
     /// </summary>
     private void Connect()
     {
-        
-        network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
-        GameLoop();
+        try
+        {
+            network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
+            GameLoop();
+        }
+        catch (Exception)
+        {
+            network.NetworkError(false);
+        }
     }
 
     private void ErrorWindowClickHandler(){

@@ -28,13 +28,15 @@ namespace GUI.Client.Controllers
 
         public bool disconnected { get; private set; } = false;
 
+        public string errorMessage { get; private set; } = "101:Page Not Found";
+
 
         public void NetworkLoop(string host, int port, string name)
         {
             serverConnection.Connect(host, port);//connect to server
 
             {
-               serverConnection.Send(name);//send the name error here?
+               serverConnection.Send(name + "\n");//send the name error here?
                               
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
@@ -46,9 +48,9 @@ namespace GUI.Client.Controllers
 
                 handShake = true;
 
-#pragma warning disable CA1416 // Validate platform compatibility //check on Piazza
+#pragma warning disable CA1416 
                 new Thread(()=> UpdateWorld()).Start();
-#pragma warning restore CA1416 // Validate platform compatibility
+#pragma warning restore CA1416
             }
         }
 
@@ -67,9 +69,24 @@ namespace GUI.Client.Controllers
             try { serverConnection?.Disconnect(); }
             catch (Exception)
             {
-                disconnected = true;
+
             }
-           
+            NetworkError(true);
+
+    }
+
+        public void NetworkError(bool userPrompted)
+        {
+            
+            if (userPrompted) {
+                errorMessage = "You have disconnected from the server";
+            }
+            else if(!disconnected)//to prevent multiple assignments to errorMessage
+            {
+                errorMessage = "There was an error connecting to the server";
+            }
+            disconnected = true;
+
         }
 
         public void resolveError()
@@ -100,7 +117,7 @@ namespace GUI.Client.Controllers
                 }
                 catch (Exception)
                 {
-                    disconnected = true;
+                    NetworkError(false);
                     return;
                 }
 
