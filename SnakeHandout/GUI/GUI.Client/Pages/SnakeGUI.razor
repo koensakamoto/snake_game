@@ -126,6 +126,10 @@
     /// default value representing view (canvas) height
     /// </summary>
     private const int ViewHeight = 1000;
+    /// <summary>
+    /// Used to keep track of snakes joining and leaving the game
+    /// </summary>
+    private JoinMessageAnimation MessageAnimator = new();
 
 
     /// <summary>
@@ -239,12 +243,17 @@
 
         //Drawing the Snakes
         List<Snake> newlyJoined = new();
+        List<Snake> snakesDisconnected = new();
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
 
             if (s.join)
             {
                 newlyJoined.Add(s);  
+            }
+            if (s.disconnected)
+            {
+                snakesDisconnected.Add(s);
             }
             //treating two points in the body as a line segment
             for (int pair = 0; pair < s.body.Count - 1; pair++)
@@ -321,17 +330,17 @@
         }
 
         //Message of newly joined Players
-        
+
         if (newlyJoined.Count > 0)
         {
-            await context.SetFillStyleAsync("white");
-            string newMessage = string.Empty;
-            foreach(Snake s in newlyJoined)
-            {
-                newMessage += (s.name + " has joined the game!\n");
-            }
-            await context.FillTextAsync(newMessage, head.X - ViewWidth/2 + 10, head.Y - ViewHeight/2 + 10);
+
+            MessageAnimator.AddSnakes(newlyJoined);
+
+
         }
+        string playerLog = MessageAnimator.MessageToDisplay();
+        await context.SetFillStyleAsync("white");
+        await context.FillTextAsync(playerLog, head.X - ViewWidth / 2 + 10, head.Y - ViewHeight / 2 + 10);
 
 
 
