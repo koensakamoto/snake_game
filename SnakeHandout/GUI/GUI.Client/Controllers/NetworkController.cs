@@ -26,35 +26,43 @@ namespace GUI.Client.Controllers
 
         public int thisID { get; private set; } = -1;
 
-        public bool handShake { get; private set; }
+        public bool recievedData { get; private set; }
 
 
         public void NetworkLoop(string host, int port, string name)
         {
-            serverConnection.Connect(host, port);//connect to server
 
-            if (serverConnection.IsConnected)
+            try
             {
-               // Debug.WriteLine("successful connection"); //delete later
+                serverConnection.Connect(host, port); // Connect to server
+
+                if (serverConnection.IsConnected)
+                {
+                    // Send the name to the server
+                    serverConnection.Send(name);
+
+                    // Read the player ID and parse it
+                    thisID = int.Parse(serverConnection.ReadLine());
+
+                    // Read the world size and parse it
+                    int worldSize = int.Parse(serverConnection.ReadLine());
+
+                    // Initialize the world
+                    world = new World(worldSize);
+
+                    recievedData = true;
+
+                    // Start a new thread to update the world
+                    new Thread(UpdateWorld).Start();
+                }
+                else
+                {
+                    Console.WriteLine("Connection to the server failed.");
+                }
             }
-
+            catch (Exception e)
             {
-                serverConnection.Send(name);//send the name
-                                            //  Debug.WriteLine(name);
-
-                thisID = int.Parse(serverConnection.ReadLine());//player id
-                                                                //  Debug.WriteLine(thisID.ToString());
-
-                //  Debug.WriteLine(thisID); //delete later
-
-                int worldSize = int.Parse(serverConnection.ReadLine());
-                //  Debug.WriteLine(worldSize);
-
-                world = new World(worldSize);
-
-                handShake = true;
-
-                new Thread(UpdateWorld).Start();
+                Console.WriteLine("Error:" + e.Message);
             }
         }
 

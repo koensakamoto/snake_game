@@ -15,7 +15,7 @@
 <div id="ConnectionInputs">
     <div class="input-row">
         <label for="url"> Name:</label>
-        <input id="url" disabled="@network.IsConnected" type="text" @bind="Name" />
+        <input id="url" disabled="@network.IsConnected" type="text" @bind="UserName" />
         <label for="url"> Server Address: </label>
         <input id="url" disabled="@network.IsConnected" type="text" @bind="ServerNameOrAddress" />
         <label for="url"> Port: </label>
@@ -31,9 +31,8 @@
     </div>
 </div>
 
-
 <img @ref="backgroundImage" id="bgImage" src="images/Background.png" alt="image" style="display:none;" />
-<img @ref="backgroundImage2" id="bgImage2" src="images/WallSprite.png" alt="image" style="display:none;" />
+<img @ref="WallImage" id="bgImage2" src="images/WallSprite.png" alt="image" style="display:none;" />
 
 <div id="snakeCanvas" style="position: fixed; width: 100%; height: 100%">
     <BECanvas Width="1000" Height="1000" @ref="canvasReference"></BECanvas>
@@ -47,14 +46,13 @@
 
     private NetworkController network = new();
 
-
     private string ServerNameOrAddress = "localhost";
 
     private int ServerPort = 11000;
 
-    private string Name = string.Empty;
+    private string UserName = string.Empty;
 
-    private World thisWorld = new(0);
+    //private World thisWorld = new(0);
 
     private int ViewWidth = 1000;
 
@@ -68,7 +66,7 @@
     /// </summary>
     private ElementReference backgroundImage;
 
-    private ElementReference backgroundImage2;
+    private ElementReference WallImage;
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -103,12 +101,10 @@
     {
         while (network.IsConnected)
         {
-            // Thread.Sleep(20);
+             Thread.Sleep(20);
             await DrawFrame();
         }
     }
-
-
 
     private async Task DrawFrame()
     {
@@ -160,7 +156,7 @@
             {
                 for (int y = startY; y <= endY; y += 50)
                 {
-                    await context.DrawImageAsync(backgroundImage2, x - 25, y - 25, 50, 50);
+                    await context.DrawImageAsync(WallImage, x - 25, y - 25, 50, 50);
                 }
             }
         }
@@ -169,23 +165,23 @@
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
 
-            for(int pair = 0; pair < s.body.Count - 1; pair++)
+            for (int pair = 0; pair < s.body.Count - 1; pair++)
             {
                 if (!s.alive)
                 {
                     await context.SetFillStyleAsync("light red"); //change colors later
-                }else
+                }
+                else
                 {
                     await context.SetFillStyleAsync(colorOptions[s.ID % 8]); //change colors later
                 }
-               
 
-                if(s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
+                if (s.body[pair].X == s.body[pair + 1].X)//x's are equal, segment is vertical
                 {
                     int y2 = Math.Max(s.body[pair].Y, s.body[pair + 1].Y);
-                    int y1 = Math.  Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
+                    int y1 = Math.Min(s.body[pair].Y, s.body[pair + 1].Y);//y2 is the lesser of the two y values
                     int sharedX = s.body[pair].X;
-                    for(int i = y1; i <= y2; i++)//possibly change += 16
+                    for (int i = y1; i <= y2; i++)//possibly change += 16
                     {
                         await context.FillRectAsync(sharedX - 5, i - 5, 10, 10);
                     }
@@ -201,10 +197,6 @@
                     }
                 }
             }
-
-                
-               
-            
         }
 
         foreach (Powerup powerup in copyOfWorld.powerups.Values)
@@ -212,7 +204,7 @@
             await context.SetLineWidthAsync(5);
             await context.SetStrokeStyleAsync($"rgb( 255, 255, 0 )");
             await context.BeginPathAsync();
-            await context.ArcAsync(powerup.location.X, powerup.location.Y, 5, 0, 2 * Math.PI);
+            await context.ArcAsync(powerup.location.X, powerup.location.Y, 8, 0, 2 * Math.PI);
             await context.StrokeAsync();
         }
 
@@ -226,7 +218,7 @@
     [JSInvokable]
     public void HandleKeyPress(string key)
     {
-        if (network.IsConnected && network.handShake)
+        if (network.IsConnected && network.recievedData)
         {
             network.sendGameCommands(key);
         }
@@ -234,7 +226,7 @@
 
     private void Connect()
     {
-        network.NetworkLoop(ServerNameOrAddress, ServerPort, Name);
+        network.NetworkLoop(ServerNameOrAddress, ServerPort, UserName);
         GameLoop();
     }
 }
