@@ -46,5 +46,10 @@
                 messageDurationMaster.Add(snake.name + " has left the game!", 0);
             }
         }
+
+        public void incrementFrame()
+        {
+
+        }
     }
 }
