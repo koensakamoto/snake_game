@@ -335,12 +335,16 @@
         {
 
             MessageAnimator.AddSnakes(newlyJoined);
+            
 
-
+        }
+        if (snakesDisconnected.Count > 0)
+        {
+            MessageAnimator.DisconnectSnakes(snakesDisconnected);
         }
         string playerLog = MessageAnimator.MessageToDisplay();
         await context.SetFillStyleAsync("white");
-        await context.FillTextAsync(playerLog, head.X - ViewWidth / 2 + 10, head.Y - ViewHeight / 2 + 10);
+        await context.FillTextAsync(playerLog, head.X - ViewWidth / 2 + 50, head.Y - ViewHeight / 2 + 50);
 
 
 
