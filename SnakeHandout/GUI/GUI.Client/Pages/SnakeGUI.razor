@@ -150,9 +150,6 @@
     /// </summary>
     private ElementReference wallSprite;
 
-    private List<Powerup> recentlyDiedPowerups = new();
-    private PowerupDeathAnimation animationManager = new();
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -330,16 +327,7 @@
         //Drawing the Powerups
         foreach (Powerup powerup in copyOfWorld.powerups.Values)
         {
-            if (powerup.died)
-            {
-                lock (recentlyDiedPowerups)
-                {
-                    recentlyDiedPowerups.Add(powerup);
-                }
-                animationManager.powerUpDied(powerup);
-            }
             await context.SetLineWidthAsync(5);
-            //death animation sequence
             await context.SetStrokeStyleAsync($"rgb( 255, 255, 0 )");
             await context.BeginPathAsync();
 
@@ -348,14 +336,13 @@
         }
 
         //draw "dead" powerups whose animation is still going
-        List<Powerup> recentlyDiedCopy; 
-        lock (recentlyDiedPowerups)
-        {
-           recentlyDiedCopy = new(recentlyDiedPowerups);
-        }
-        foreach (Powerup pow in recentlyDiedCopy)
+
+
+        PowerupDeathAnimationHandler animationHandler = copyOfWorld.animationHandler;
+        Powerup[] recentlyDiedPowerups = animationHandler.getPowerups();
+        foreach (Powerup pow in recentlyDiedPowerups)
             {
-                double radius = animationManager.getPowerUpRadius(pow);
+                double radius = animationHandler.getPowerUpRadius(pow);
                 await context.BeginPathAsync();
                 await context.ArcAsync(pow.location.X, pow.location.Y, radius, 0, 2 * Math.PI);
                 await context.StrokeAsync();

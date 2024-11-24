@@ -191,6 +191,7 @@ namespace GUI.Client.Controllers
 
                 lock (world)
                 {
+                    world.animationHandler.frameUp();
                     if (sentInformation.Contains("snake"))//server sent us a snake
                     {
                         Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
@@ -233,6 +234,7 @@ namespace GUI.Client.Controllers
                         if (powerup.died)
                         {
                             world.powerups.Remove(powerup!.ID);
+                            world.animationHandler.powerUpDied(powerup);
                         }
                     }
                 }

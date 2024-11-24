@@ -2,24 +2,33 @@
 //<author>Dominik Jamrich and Kevin Sakamoto</author>
 //<version>1.0</version>
 //<date>November 24, 2024</date>
-//<summary>Models PowerupDeathAnimation</summary>
+//<summary>Models PowerupDeathAnimationHandler</summary>
 namespace GUI.Client.Models
 {
     /// <summary>
     /// Class used to keep track of powerups that have died
     /// </summary>
-    public class PowerupDeathAnimation
+    public class PowerupDeathAnimationHandler
     {
         /// <summary>
         /// Mapping of powerup to its respective radius size
         /// </summary>
         private Dictionary<Powerup, double> animationDurationMaster = new();
-  
+
+        public static readonly double maxRadius = 100;
+        public static readonly int step = 0.5;
+
         /// <summary>
         /// Zero argument constructor for creating model
         /// </summary>
-        public PowerupDeathAnimation()
+        public PowerupDeathAnimationHandler()
         { }
+
+        public PowerupDeathAnimationHandler(PowerupDeathAnimationHandler old)
+        {
+            animationDurationMaster = new Dictionary<Powerup, double>(old.animationDurationMaster);
+
+        }
         /// <summary>
         /// inputs the powerup that died into the mapping, threadding compliant
         /// </summary>
@@ -29,7 +38,7 @@ namespace GUI.Client.Models
 
             lock (this)
             {
-                animationDurationMaster[pow] = 7.8;
+                animationDurationMaster[pow] = 8;
             }
 
         }
@@ -41,16 +50,28 @@ namespace GUI.Client.Models
         /// <returns></returns>
         public double getPowerUpRadius(Powerup pow)
         {
-            lock (this)
+            return animationDurationMaster[pow];
+            
+        }
+
+        public void frameUp()
+        {
+            foreach (var pow in animationDurationMaster.Keys)
             {
-                if (animationDurationMaster[pow] >= 30)
+                if (animationDurationMaster[pow] >= maxRadius)
                 {
                     animationDurationMaster.Remove(pow);
-                    return 0;
                 }
-                animationDurationMaster[pow] += 0.2;
-                return animationDurationMaster[pow];
+                else
+                {
+                    animationDurationMaster[pow] += step;
+                }
             }
+        }
+
+        public Powerup[] getPowerups()
+        {
+            return animationDurationMaster.Keys.ToArray();
         }
 
     }

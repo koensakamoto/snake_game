@@ -29,6 +29,11 @@ namespace GUI.Client.Models
         /// </summary>
         public int size { get; set; }
 
+        /// <summary>
+        /// Used to map out which powerups have died and need animation
+        /// </summary>
+        public PowerupDeathAnimationHandler animationHandler { get; set; }
+
 
      /// <summary>
      /// constructor used to construct world of given size
@@ -40,6 +45,7 @@ namespace GUI.Client.Models
             powerups = new Dictionary<int, Powerup>();
             walls = new Dictionary<int, Wall>();
             this.size = size;
+            animationHandler = new();
         }
         /// <summary>
         /// used when copying the world
@@ -51,6 +57,7 @@ namespace GUI.Client.Models
             powerups = new(world.powerups);
             walls = new(world.walls);
             size = world.size;
+            animationHandler = new PowerupDeathAnimationHandler(world.animationHandler);
         }
 
     }
