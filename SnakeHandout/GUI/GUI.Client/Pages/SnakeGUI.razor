@@ -131,6 +131,11 @@
     /// </summary>
     private JoinMessageAnimation MessageAnimator = new();
 
+    /// <summary>
+    /// Timer for simulating the frame rate of a game
+    /// </summary>
+    System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+
 
     /// <summary>
     /// default options for the colors of snakes, where first player is white, second player is blue, etc.
@@ -147,6 +152,10 @@
     /// c# reference to the html element for the wallsprites
     /// </summary>
     private ElementReference wallSprite;
+
+    private int nextMessageLocation = 0;
+
+    private bool defaultLocationAvailable = true;
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -215,7 +224,7 @@
 
         // Center on origin, move to center of view port
         await context.TranslateAsync(ViewWidth / 2, ViewHeight / 2);
-        await context.TranslateAsync(-head.X, -head.Y); //change
+        await context.TranslateAsync(-head.X, -head.Y);
 
         //Draw the background:
         await context.DrawImageAsync(backgroundImage, -copyOfWorld.size / 2, -copyOfWorld.size / 2, copyOfWorld.size, copyOfWorld.size);
@@ -242,28 +251,35 @@
         }
 
         //Drawing the Snakes
-        List<Snake> newlyJoined = new();
-        List<Snake> snakesDisconnected = new();
+
+        string messageActivity = string.Empty;
         foreach (Snake s in copyOfWorld.snakes.Values)
         {
 
             if (s.join)
             {
-                newlyJoined.Add(s);  
+                new Thread(()=>MessageAnimator.pushMessage(s.name + "has joined the game!\n")).Start();
             }
             if (s.disconnected)
             {
-                snakesDisconnected.Add(s);
+                new Thread(()=>MessageAnimator.pushMessage(s.name + "has left the game!\n")).Start();
+               
+                await RenderDisconnectAsync(s, head);
             }
+
+
+
+
             //treating two points in the body as a line segment
             for (int pair = 0; pair < s.body.Count - 1; pair++)
             {
                 string style = string.Empty;
                 //death animation sequence
-                if (!s.alive ||s.died)
+                if (!s.alive || s.died)
                 {
-                    style = "red"; 
-                } else
+                    style = "red";
+                }
+                else
                 {
                     style = colorOptions[s.ID % 8];
                 }
@@ -274,7 +290,7 @@
                 Point2D snakesHead = s.body[s.body.Count - 1];
                 await context.SetFillStyleAsync("black");
 
-                if(s.dir.Y == 1)
+                if (s.dir.Y == 1)
                 {
                     await context.FillTextAsync($"{s.name}: {s.score}", snakesHead.X + 10, snakesHead.Y + 10);
                 }
@@ -331,21 +347,14 @@
 
         //Message of newly joined Players
 
-        if (newlyJoined.Count > 0)
-        {
-
-            MessageAnimator.AddSnakes(newlyJoined);
-            
-
-        }
-        if (snakesDisconnected.Count > 0)
-        {
-            MessageAnimator.DisconnectSnakes(snakesDisconnected);
-        }
-        string playerLog = MessageAnimator.MessageToDisplay();
+       
+        string playerLog = MessageAnimator.message;
         await context.SetFillStyleAsync("white");
-        await context.FillTextAsync(playerLog, head.X - ViewWidth / 2 + 50, head.Y - ViewHeight / 2 + 50);
+        await context.FillTextAsync(playerLog, head.X, head.Y);//change back
+        MessageAnimator.incrementFrame();
 
+
+        //await RenderJoinedAsync(joinedSnakes, head);
 
 
         //Drawing the Powerups
@@ -374,7 +383,7 @@
     {
         if (network.IsConnected && network.handShake)
         {
-            new Thread(()=> network.sendGameCommands(key)).Start();//possible fix
+            new Thread(() => network.sendGameCommands(key)).Start();//possible fix
         }
     }
 
@@ -394,8 +403,53 @@
         }
     }
 
-    private void ErrorWindowClickHandler(){
+    private void ErrorWindowClickHandler()
+    {
         network.resolveError();
+    }
+
+    // private async Task RenderJoinedAsync(Snake s, Point2D head)
+    // {
+
+    //     int x = 0;
+    //     while(x < 150){
+    //         await context.SetFillStyleAsync("white");
+    //         await context.FillTextAsync(s.name + "has joined the game", head.X + 50, head.Y + 50);
+    //         x++;
+    //     }
+    //     return;
+    // }
+
+
+    private async Task RenderJoinedAsync(List<Snake> joinedSnakes, Point2D head)
+    {
+        int nextMessageLocation = 0;
+        foreach (Snake s in joinedSnakes)
+        {
+            int x = 0;
+            while (x < 150)
+            {
+                await context.SetFillStyleAsync("white");
+                await context.FillTextAsync(s.name + "has joined the game", head.X + 50, head.Y + 50 + nextMessageLocation);
+                x++;
+            }
+            nextMessageLocation += 10;
+        }
+    }
+
+    private async Task RenderDisconnectAsync(Snake s, Point2D head)
+    {
+
+        int x = 0;
+        while (x < 150)
+        {
+            await context.SetFillStyleAsync("white");
+            await context.FillTextAsync(s.name + "has joined the game", head.X + 50, head.Y + 50);
+            x++;
+        }
+        return;
+
+
     }
 }
 

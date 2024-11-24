@@ -12,6 +12,7 @@ namespace GUI.Client.Models
 
         public int size { get; set; }
 
+
      
         public World(int size)
         {

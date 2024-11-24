@@ -1,55 +1,36 @@
-﻿namespace GUI.Client.Models
+﻿using System.Security.Cryptography;
+
+namespace GUI.Client.Models
 {
     public class JoinMessageAnimation
     {
-
-        private Dictionary<string, int> messageDurationMaster = new();
-
+        public int frameCount { get; private set; }
+        private Dictionary<int, int> messageDurationMaster = new();
+        public string message { get; private set; } = string.Empty;
+        
         public JoinMessageAnimation()
         {
-
+            frameCount = 0;
         }
-
-        public string MessageToDisplay()
+        public void pushMessage(string newMessage)
         {
-            List<string> removeMessage = new List<string>();
-            string message = string.Empty;
-            foreach (KeyValuePair<string, int> messageCouplet in messageDurationMaster)
-            {
-                if (messageCouplet.Value == 100) 
-                {
-                    removeMessage.Add(messageCouplet.Key);
-                }
-                else
-                {
-                    message += messageCouplet.Key + "\n";
-                }
-            }
-            foreach (string s in removeMessage)
-            {
-                messageDurationMaster.Remove(s);
-            }
-            return message;
-        }
-
-        public void AddSnakes(List<Snake> addedSnakes)
-        {
-            foreach (Snake snake in addedSnakes) {
-                messageDurationMaster.Add(snake.name + " has joined the game!", 0);
-            }
-        }
-
-        public void DisconnectSnakes(List<Snake> removedSnakes)
-        {
-            foreach (Snake snake in removedSnakes)
-            {
-                messageDurationMaster.Add(snake.name + " has left the game!", 0);
+            int subFinish = newMessage.Length;
+            lock (this) { 
+            messageDurationMaster[frameCount + 10000] = subFinish;
+            message += newMessage;
             }
         }
 
         public void incrementFrame()
         {
-
+            frameCount++;
+            lock (this)
+            {
+                if (messageDurationMaster.ContainsKey(frameCount))
+                {
+                    message = message.Substring(messageDurationMaster[frameCount]);
+                }
+            }
         }
     }
 }

@@ -191,11 +191,12 @@ namespace GUI.Client.Controllers
 
         public void sendGameCommands(string key)
         {
+            Debug.WriteLine(key);
             ControlCommand controlCommand = new ControlCommand();
 
             key = key.ToLower();
             
-                if (key.Equals("w"))
+                if (key.Equals("w") || key.Equals("arrowup"))
                 {
                     controlCommand.moving = "up";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
@@ -203,7 +204,7 @@ namespace GUI.Client.Controllers
                     sentOnceFrame = true;
                 }
 
-                else if (key.Equals("s"))
+                else if (key.Equals("s") || key.Equals("arrpwdown"))
                 {
                     controlCommand.moving = "down";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
@@ -212,7 +213,7 @@ namespace GUI.Client.Controllers
                     sentOnceFrame = true;
                 }
 
-                else if (key.Equals("a"))
+                else if (key.Equals("a") || key.Equals("arrowleft"))
                 {
                     controlCommand.moving = "left";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
@@ -220,7 +221,7 @@ namespace GUI.Client.Controllers
                     serverConnection.Send(jsonContent);
                     sentOnceFrame = true;
                 }
-                else if (key.Equals("d"))
+                else if (key.Equals("d") || key.Equals("arrowright"))
                 {
                     {
                         controlCommand.moving = "right";
