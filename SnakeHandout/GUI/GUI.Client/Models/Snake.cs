@@ -23,6 +23,8 @@ namespace GUI.Client.Models
         [JsonInclude]
         public bool died { get; set; }
 
+        //public bool dying { get; private set; } = false;
+
         [JsonInclude]
         public bool alive { get; set; }
 
@@ -37,6 +39,8 @@ namespace GUI.Client.Models
         {
 
         }
+
+        
 
     }
 }

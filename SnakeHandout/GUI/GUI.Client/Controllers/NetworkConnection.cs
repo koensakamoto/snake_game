@@ -109,7 +109,7 @@ public sealed class NetworkConnection : IDisposable
         {
             throw new InvalidOperationException();
         }
-        _writer?.WriteLine(new StringBuilder(message));
+        _writer?.WriteLine(message);
 
     }
     /// <summary>

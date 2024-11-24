@@ -20,50 +20,52 @@ namespace GUI.Client.Controllers
 
         private NetworkConnection serverConnection = new();
 
-        private World world2 = new(0);
-
-        public World world { get; private set; }
+        private World world = new(0);
 
         public int thisID { get; private set; } = -1;
 
-        public bool recievedData { get; private set; }
+        public bool handShake { get; private set; }
+
+        public bool disconnected { get; private set; } = false;
+
+        public string errorMessage { get; private set; } = "101:Page Not Found";
+
+        private bool sentOnceFrame { get; set; }
+
+        public bool NameError { get; private set; }
 
 
         public void NetworkLoop(string host, int port, string name)
         {
-
-            try
-            {
-                serverConnection.Connect(host, port); // Connect to server
-
-                if (serverConnection.IsConnected)
-                {
-                    // Send the name to the server
-                    serverConnection.Send(name);
-
-                    // Read the player ID and parse it
-                    thisID = int.Parse(serverConnection.ReadLine());
-
-                    // Read the world size and parse it
-                    int worldSize = int.Parse(serverConnection.ReadLine());
-
-                    // Initialize the world
-                    world = new World(worldSize);
-
-                    recievedData = true;
-
-                    // Start a new thread to update the world
-                    new Thread(UpdateWorld).Start();
-                }
-                else
-                {
-                    Console.WriteLine("Connection to the server failed.");
-                }
+            if (name.Length > 16){
+                errorMessage = "Please re-enter your name, it needs to be less than 16 char.";
+                NameError = true;
+                return;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error:" + e.Message);
-            }
+
+            serverConnection.Connect(host, port);//connect to server
+               
+            
+
+         
+               serverConnection.Send(name);
+                              
+
+                thisID = int.Parse(serverConnection.ReadLine());//player id
+                                                                
+
+                int worldSize = int.Parse(serverConnection.ReadLine());
+               
+                world = new World(worldSize);
+
+                handShake = true;
+
+                sentOnceFrame = false;
+
+#pragma warning disable CA1416 
+                new Thread(()=> UpdateWorld()).Start();
+#pragma warning restore CA1416
+            
         }
 
 
@@ -78,10 +80,36 @@ namespace GUI.Client.Controllers
 
         public void DisconnectFromServer()
         {
-            serverConnection?.Disconnect();
+            try { serverConnection?.Disconnect(); }
+            catch (Exception)
+            {
+
+            }
+            NetworkError(true);
+
+    }
+
+        public void NetworkError(bool userPrompted)
+        {
+            
+            if (userPrompted) {
+                errorMessage = "You have disconnected from the server";
+            }
+            else if(!disconnected)//to prevent multiple assignments to errorMessage
+            {
+                errorMessage = "There was an error connecting to the server";
+            }
+            disconnected = true;
+
         }
 
-        //possibly delete
+        public void resolveError()
+        {
+            disconnected = false;
+            NameError = false;
+        }
+
+        
         public World copyWorld()
         {
             World copyOfWorld = new(0);
@@ -97,7 +125,18 @@ namespace GUI.Client.Controllers
         {
             while (IsConnected)
             {
-                string sentInformation = serverConnection.ReadLine();
+                string sentInformation;
+                try
+                {
+                    sentInformation = serverConnection.ReadLine();
+                    sentOnceFrame = false;
+
+                }
+                catch (Exception)
+                {
+                    NetworkError(false);
+                    return;
+                }
 
                 lock (world)
                 {
@@ -146,10 +185,6 @@ namespace GUI.Client.Controllers
                         }
                     }
                 }
-                //Debug.WriteLine(JsonSerializer.Serialize<World>(world, new JsonSerializerOptions
-                //{
-                //    WriteIndented = true
-                //})); //used to write our world to debug
             }
         }
 
@@ -159,40 +194,46 @@ namespace GUI.Client.Controllers
             ControlCommand controlCommand = new ControlCommand();
 
             key = key.ToLower();
-
-            if (key.Equals("w"))
-            {
-                controlCommand.moving = "up";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                //Debug.Write(jsonContent.ToString());
-                serverConnection.Send(jsonContent);
-            }
-
-            else if (key.Equals("s"))
-            {
-                controlCommand.moving = "down";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                // Debug.Write(jsonContent.ToString());
-                serverConnection.Send(jsonContent);
-            }
-            else if (key.Equals("a"))
-            {
-                controlCommand.moving = "left";
-                string jsonContent = JsonSerializer.Serialize(controlCommand);
-                //Debug.Write(jsonContent.ToString());
-                serverConnection.Send(jsonContent);
-            }
-            else if (key.Equals("d"))
-            {
+            
+                if (key.Equals("w"))
                 {
-                    controlCommand.moving = "right";
+                    controlCommand.moving = "up";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
-                    // Debug.Write(jsonContent.ToString());
                     serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+
+                else if (key.Equals("s"))
+                {
+                    controlCommand.moving = "down";
+                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                    serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+
+                else if (key.Equals("a"))
+                {
+                    controlCommand.moving = "left";
+                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                    serverConnection.Send(jsonContent);
+                    sentOnceFrame = true;
+                }
+                else if (key.Equals("d"))
+                {
+                    {
+                        controlCommand.moving = "right";
+                        string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                        serverConnection.Send(jsonContent);
+                        sentOnceFrame = true;
+                    }
                 }
             }
+   
 
-        }
+        
     }
 }
 
