@@ -1,19 +1,39 @@
-﻿using System.Drawing;
+﻿// <copyright file="NetworkController.cs" 
+//<author>Dominik Jamrich and Kevin Sakamoto</author>
+//<version>1.0</version>
+//<date>November 24, 2024</date>
+//<summary>Models World</summary>
+using System.Drawing;
 
 namespace GUI.Client.Models
 {
+    /// <summary>
+    /// Represents the whole world given to us by snake
+    /// </summary>
     public class World
     {
+        /// <summary>
+        /// Mapping of snakes and their unique ids
+        /// </summary>
         public Dictionary<int, Snake> snakes {  get; set; }
-
+        /// <summary>
+        /// Mapping of powerups and their unique ids
+        /// </summary>
         public Dictionary<int, Powerup> powerups { get; set; }
-
+        /// <summary>
+        /// Mapping of walls and their unique ids
+        /// </summary>
         public Dictionary<int, Wall> walls { get; set; }
-
+        /// <summary>
+        /// size of the world (given by server)
+        /// </summary>
         public int size { get; set; }
 
 
-     
+     /// <summary>
+     /// constructor used to construct world of given size
+     /// </summary>
+     /// <param name="size"></param>
         public World(int size)
         {
             snakes = new Dictionary<int, Snake>();
@@ -21,7 +41,10 @@ namespace GUI.Client.Models
             walls = new Dictionary<int, Wall>();
             this.size = size;
         }
-
+        /// <summary>
+        /// used when copying the world
+        /// </summary>
+        /// <param name="world">the world to copy</param>
         public World(World world)
         {
             snakes = new(world.snakes);

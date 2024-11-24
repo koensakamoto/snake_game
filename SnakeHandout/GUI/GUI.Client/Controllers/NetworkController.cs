@@ -1,4 +1,9 @@
-﻿using CS3500.Networking;
+﻿// <copyright file="NetworkController.cs" 
+//<author>Dominik Jamrich and Kevin Sakamoto</author>
+//<version>1.0</version>
+//<date>November 24, 2024</date>
+//<summary>Snake Game Network Controller (C of MVC)</summary>
+using CS3500.Networking;
 using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -15,29 +20,58 @@ using System.Text.Encodings.Web;
 
 namespace GUI.Client.Controllers
 {
+    /// <summary>
+    /// This class represents the controller of our application; it converses with the server and 
+    /// creates appropriate models for the view to use
+    /// </summary>
     public class NetworkController
     {
-
+        /// <summary>
+        /// Connection that is used to connect with server
+        /// </summary>
         private NetworkConnection serverConnection = new();
 
+        /// <summary>
+        /// World used in modeling the world sent by the server
+        /// </summary>
         private World world = new(0);
 
+        /// <summary>
+        /// The id that matches this player, i.e. the one
+        /// playing on this application
+        /// </summary>
         public int thisID { get; private set; } = -1;
-
+        /// <summary>
+        /// Has the handshake (name and id and worldsize sent) been completed?
+        /// true it has been false it has not
+        /// </summary>
         public bool handShake { get; private set; }
-
+        /// <summary>
+        /// has the connection been disconnected for some reason?
+        /// true if it has. Used in view to display error
+        /// </summary>
         public bool disconnected { get; private set; } = false;
-
+        /// <summary>
+        /// String representing the error message to be displayed upon error
+        /// </summary>
         public string errorMessage { get; private set; } = "101:Page Not Found";
-
-        private bool sentOnceFrame { get; set; }
-
+       
+        /// <summary>
+        /// Was there an error with the name the user inputted (i.e. was it longer than 
+        /// 16 char?) true if yes.
+        /// </summary>
         public bool NameError { get; private set; }
 
-
+        /// <summary>
+        /// Loop representing the active communication between server and client
+        /// </summary>
+        /// <param name="host">host name/number (basically server address)</param>
+        /// <param name="port">port number</param>
+        /// <param name="name">name of the player (or desired name, can be error)</param>
         public void NetworkLoop(string host, int port, string name)
         {
-            if (name.Length > 16){
+            if (name.Length > 16)//name was too long
+            {
                 errorMessage = "Please re-enter your name, it needs to be less than 16 char.";
                 NameError = true;
                 return;
@@ -48,7 +82,7 @@ namespace GUI.Client.Controllers
             
 
          
-               serverConnection.Send(name);
+               serverConnection.Send(name);//send name
                               
 
                 thisID = int.Parse(serverConnection.ReadLine());//player id
@@ -60,7 +94,7 @@ namespace GUI.Client.Controllers
 
                 handShake = true;
 
-                sentOnceFrame = false;
+                
 
 #pragma warning disable CA1416 
                 new Thread(()=> UpdateWorld()).Start();
@@ -68,7 +102,9 @@ namespace GUI.Client.Controllers
             
         }
 
-
+        /// <summary>
+        /// Returns whether or not the connecttion is still active
+        /// </summary>
         public bool IsConnected
         {
             get
@@ -77,7 +113,10 @@ namespace GUI.Client.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Disconnects the connects from the server, catching any exceptions generated
+        /// by this action
+        /// </summary>
         public void DisconnectFromServer()
         {
             try { serverConnection?.Disconnect(); }
@@ -88,7 +127,12 @@ namespace GUI.Client.Controllers
             NetworkError(true);
 
     }
-
+        /// <summary>
+        /// Used to handle errors upon disconnection
+        /// </summary>
+        /// <param name="userPrompted">If true, that means that the user
+        /// clicked to disconnect, otherwsie, unexpected error: this changes
+        /// the text displayed to the user</param>
         public void NetworkError(bool userPrompted)
         {
             
@@ -102,14 +146,19 @@ namespace GUI.Client.Controllers
             disconnected = true;
 
         }
-
+        /// <summary>
+        /// Resolves the error and allows the view to clear up the screen 
+        /// </summary>
         public void resolveError()
         {
             disconnected = false;
             NameError = false;
         }
 
-        
+        /// <summary>
+        /// Copies the world, obeys principles of threading and race-conditions
+        /// </summary>
+        /// <returns>returns a copy of the world</returns>
         public World copyWorld()
         {
             World copyOfWorld = new(0);
@@ -120,7 +169,9 @@ namespace GUI.Client.Controllers
             return copyOfWorld;
         }
 
-
+        /// <summary>
+        /// updates the world from the information sent by the server
+        /// </summary>
         private void UpdateWorld()
         {
             while (IsConnected)
@@ -129,7 +180,7 @@ namespace GUI.Client.Controllers
                 try
                 {
                     sentInformation = serverConnection.ReadLine();
-                    sentOnceFrame = false;
+                    
 
                 }
                 catch (Exception)
@@ -188,7 +239,10 @@ namespace GUI.Client.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Sends game commands to the server
+        /// </summary>
+        /// <param name="key">name of the key that was pressed</param>
         public void sendGameCommands(string key)
         {
             Debug.WriteLine(key);
@@ -201,16 +255,16 @@ namespace GUI.Client.Controllers
                     controlCommand.moving = "up";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
                     serverConnection.Send(jsonContent);
-                    sentOnceFrame = true;
+                    
                 }
 
-                else if (key.Equals("s") || key.Equals("arrpwdown"))
+                else if (key.Equals("s") || key.Equals("arrowdown"))
                 {
                     controlCommand.moving = "down";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
 
                     serverConnection.Send(jsonContent);
-                    sentOnceFrame = true;
+                    
                 }
 
                 else if (key.Equals("a") || key.Equals("arrowleft"))
@@ -219,17 +273,17 @@ namespace GUI.Client.Controllers
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
 
                     serverConnection.Send(jsonContent);
-                    sentOnceFrame = true;
+                    
                 }
                 else if (key.Equals("d") || key.Equals("arrowright"))
                 {
-                    {
+                    
                         controlCommand.moving = "right";
                         string jsonContent = JsonSerializer.Serialize(controlCommand);
 
                         serverConnection.Send(jsonContent);
-                        sentOnceFrame = true;
-                    }
+                        
+                    
                 }
             }
    
