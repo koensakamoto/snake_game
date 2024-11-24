@@ -14,9 +14,14 @@ namespace GUI.Client.Models
         /// Mapping of powerup to its respective radius size
         /// </summary>
         private Dictionary<Powerup, double> animationDurationMaster = new();
-
+        /// <summary>
+        /// constant that represents max size of powerup during animation
+        /// </summary>
         public static readonly double maxRadius = 100;
-        public static readonly int step = 0.5;
+        /// <summary>
+        /// constant that represents increments of radius every frame
+        /// </summary>
+        public static readonly double step = 0.5;
 
         /// <summary>
         /// Zero argument constructor for creating model
@@ -24,6 +29,10 @@ namespace GUI.Client.Models
         public PowerupDeathAnimationHandler()
         { }
 
+        /// <summary>
+        /// used to copy handlers during copying of the world
+        /// </summary>
+        /// <param name="old"></param>
         public PowerupDeathAnimationHandler(PowerupDeathAnimationHandler old)
         {
             animationDurationMaster = new Dictionary<Powerup, double>(old.animationDurationMaster);
@@ -54,6 +63,10 @@ namespace GUI.Client.Models
             
         }
 
+        /// <summary>
+        /// simulates increase in frame by increasing the radius of the powerup
+        /// removing those whose animation is complete (i.e. they have reached max radius)
+        /// </summary>
         public void frameUp()
         {
             foreach (var pow in animationDurationMaster.Keys)
@@ -68,7 +81,10 @@ namespace GUI.Client.Models
                 }
             }
         }
-
+        /// <summary>
+        /// gets the powerups whose animations are still ongoing (for view use)
+        /// </summary>
+        /// <returns></returns>
         public Powerup[] getPowerups()
         {
             return animationDurationMaster.Keys.ToArray();
