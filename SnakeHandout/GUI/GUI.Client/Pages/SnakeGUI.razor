@@ -176,7 +176,10 @@
     }
 
 
-
+    /// <summary>
+    ///draws the frame given the world specifications
+    /// </summary>
+    /// <returns></returns>
     private async Task DrawFrame()
     {
         World copyOfWorld = network.copyWorld();//get network's copy of world
@@ -339,13 +342,13 @@
         PowerupDeathAnimationHandler animationHandler = copyOfWorld.animationHandler;
         Powerup[] recentlyDiedPowerups = animationHandler.getPowerups();
         foreach (Powerup pow in recentlyDiedPowerups)
-            {
-                double radius = animationHandler.getPowerUpRadius(pow);
-                await context.BeginPathAsync();
-                await context.ArcAsync(pow.location.X, pow.location.Y, radius, 0, 2 * Math.PI);
-                await context.StrokeAsync();
-            }
-        
+        {
+            double radius = animationHandler.getPowerUpRadius(pow);
+            await context.BeginPathAsync();
+            await context.ArcAsync(pow.location.X, pow.location.Y, radius, 0, 2 * Math.PI);
+            await context.StrokeAsync();
+        }
+
 
 
 
@@ -382,6 +385,9 @@
         }
     }
 
+    /// <summary>
+    /// resolves the network error when button is clicked
+    /// </summary>
     private void ErrorWindowClickHandler()
     {
         network.resolveError();

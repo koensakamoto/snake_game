@@ -3,10 +3,7 @@ window.initRenderJS = (instance) => {
     window.theInstance = instance;
 };
 
-document.addEventListener('keydown', function (event)
-{
-    // Optionally log the key sfor testing
-    console.log('Key pressed:', event.key);
+document.addEventListener('keydown', function (event) {
 
     // Call the C# method and pass the key pressed
     theInstance.invokeMethodAsync('HandleKeyPress', event.key);

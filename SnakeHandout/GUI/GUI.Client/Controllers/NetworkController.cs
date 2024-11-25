@@ -247,7 +247,6 @@ namespace GUI.Client.Controllers
         /// <param name="key">name of the key that was pressed</param>
         public void sendGameCommands(string key)
         {
-            Debug.WriteLine(key);
             ControlCommand controlCommand = new ControlCommand();
 
             key = key.ToLower();
