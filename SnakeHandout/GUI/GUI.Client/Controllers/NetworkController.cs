@@ -29,7 +29,7 @@ namespace GUI.Client.Controllers
         /// <summary>
         /// Connection that is used to connect with server
         /// </summary>
-        private NetworkConnection serverConnection = new();
+        private NetworkConnection gameServerConnection = new(false);
 
         /// <summary>
         /// World used in modeling the world sent by the server
@@ -70,6 +70,10 @@ namespace GUI.Client.Controllers
         /// <param name="name">name of the player (or desired name, can be error)</param>
         public void NetworkLoop(string host, int port, string name)
         {
+            NetworkConnection databaseMessenger = new NetworkConnection(true);
+            databaseMessenger.Connect("localhost", 10000);
+            databaseMessenger.Send("heydatabase:)");
+
             if (name.Length > 16)//name was too long
             {
                 errorMessage = "Please re-enter your name, it needs to be less than 16 char.";
@@ -77,18 +81,18 @@ namespace GUI.Client.Controllers
                 return;
             }
 
-            serverConnection.Connect(host, port);//connect to server
+            gameServerConnection.Connect(host, port);//connect to server
                
             
 
          
-               serverConnection.Send(name);//send name
+               gameServerConnection.Send(name);//send name
                               
 
-                thisID = int.Parse(serverConnection.ReadLine());//player id
+                thisID = int.Parse(gameServerConnection.ReadLine());//player id
                                                                 
 
-                int worldSize = int.Parse(serverConnection.ReadLine());
+                int worldSize = int.Parse(gameServerConnection.ReadLine());
                
                 world = new World(worldSize);
 
@@ -109,7 +113,7 @@ namespace GUI.Client.Controllers
         {
             get
             {
-                return serverConnection.IsConnected;
+                return gameServerConnection.IsConnected;
             }
         }
 
@@ -119,7 +123,7 @@ namespace GUI.Client.Controllers
         /// </summary>
         public void DisconnectFromServer()
         {
-            try { serverConnection?.Disconnect(); }
+            try { gameServerConnection?.Disconnect(); }
             catch (Exception)
             {
 
@@ -179,7 +183,7 @@ namespace GUI.Client.Controllers
                 string sentInformation;
                 try
                 {
-                    sentInformation = serverConnection.ReadLine();
+                    sentInformation = gameServerConnection.ReadLine();
                     
 
                 }
@@ -255,7 +259,7 @@ namespace GUI.Client.Controllers
                 {
                     controlCommand.moving = "up";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
-                    serverConnection.Send(jsonContent);
+                    gameServerConnection.Send(jsonContent);
                     
                 }
 
@@ -264,7 +268,7 @@ namespace GUI.Client.Controllers
                     controlCommand.moving = "down";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
 
-                    serverConnection.Send(jsonContent);
+                    gameServerConnection.Send(jsonContent);
                     
                 }
 
@@ -273,7 +277,7 @@ namespace GUI.Client.Controllers
                     controlCommand.moving = "left";
                     string jsonContent = JsonSerializer.Serialize(controlCommand);
 
-                    serverConnection.Send(jsonContent);
+                    gameServerConnection.Send(jsonContent);
                     
                 }
                 else if (key.Equals("d") || key.Equals("arrowright"))
@@ -282,7 +286,7 @@ namespace GUI.Client.Controllers
                         controlCommand.moving = "right";
                         string jsonContent = JsonSerializer.Serialize(controlCommand);
 
-                        serverConnection.Send(jsonContent);
+                        gameServerConnection.Send(jsonContent);
                         
                     
                 }
