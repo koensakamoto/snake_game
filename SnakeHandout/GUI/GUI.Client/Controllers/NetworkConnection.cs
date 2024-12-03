@@ -46,23 +46,18 @@ public sealed class NetworkConnection : IDisposable
     /// <param name="tcpClient">
     ///   An already existing TcpClient
     /// </param>
-    public NetworkConnection(TcpClient tcpClient, bool IsWeb)
+    public NetworkConnection(TcpClient tcpClient)
     {
         _tcpClient = tcpClient;
         if (IsConnected)
         {
-            if (IsWeb)
-            {
-                _reader = new StreamReader(_tcpClient.GetStream(), new UTF8Encoding(false));
-                _writer = new StreamWriter(_tcpClient.GetStream(), new UTF8Encoding(false)) { AutoFlush = true }; // AutoFlush ensures data is sent immediately
-            }
-            else
-            {
-                _reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
-                _writer = new StreamWriter(_tcpClient.GetStream(), Encoding.UTF8) { AutoFlush = true }; // AutoFlush ensures data is sent immediately
-            }
+
+
+            _reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
+            _writer = new StreamWriter(_tcpClient.GetStream(), Encoding.UTF8) { AutoFlush = true }; // AutoFlush ensures data is sent immediately
+
             // Only establish the reader/writer if the provided TcpClient is already connected.
-           
+
         }
     }
 
@@ -72,8 +67,8 @@ public sealed class NetworkConnection : IDisposable
     ///     Create a network connection object.  The tcpClient will be unconnected at the start.
     ///   </para>
     /// </summary>
-    public NetworkConnection(bool IsWeb)
-        : this(new TcpClient(), IsWeb)
+    public NetworkConnection()
+        : this(new TcpClient())
     {
     }
 

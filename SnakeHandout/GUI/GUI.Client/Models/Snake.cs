@@ -62,9 +62,19 @@ namespace GUI.Client.Models
         [JsonInclude]
         public bool join { get; set; }
         /// <summary>
-        /// Zero-argument constructor for JSON
+        /// Tracks the max score for this snake seen during one 
+        /// game.
         /// </summary>
-        public Snake()
+        [JsonIgnore]
+        public int maxScore { get; set; }
+
+
+
+       /// <summary>
+       /// Zero-argument constructor for JSON
+       /// </summary>
+
+       public Snake()
         {
             body = new();
             dir = new Point2D();

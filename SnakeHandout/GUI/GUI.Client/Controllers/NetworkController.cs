@@ -17,6 +17,8 @@ using System.IO.Pipes;
 using Microsoft.AspNetCore.Components;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
+using MySql.Data.MySqlClient;
+using System.Reflection.PortableExecutable;
 
 namespace GUI.Client.Controllers
 {
@@ -29,7 +31,7 @@ namespace GUI.Client.Controllers
         /// <summary>
         /// Connection that is used to connect with server
         /// </summary>
-        private NetworkConnection gameServerConnection = new(false);
+        private NetworkConnection gameServerConnection = new();
 
         /// <summary>
         /// World used in modeling the world sent by the server
@@ -55,12 +57,25 @@ namespace GUI.Client.Controllers
         /// String representing the error message to be displayed upon error
         /// </summary>
         public string errorMessage { get; private set; } = "101:Page Not Found";
-       
+
         /// <summary>
         /// Was there an error with the name the user inputted (i.e. was it longer than 
         /// 16 char?) true if yes.
         /// </summary>
         public bool NameError { get; private set; }
+        /// <summary>
+        /// The connection string.
+        /// Your uID login name serves as both your database name and your uid
+        /// </summary>
+        public const string connectionString = "server=atr.eng.utah.edu;" +
+      "database=u1466090;" +
+      "uid=u1466090;" +
+      "password=hey";
+
+        ///<summary>
+        ///the integer game id representing the most recent game
+        ///</summary>
+        public int thisGame { get; private set; }
 
         /// <summary>
         /// Loop representing the active communication between server and client
@@ -70,9 +85,7 @@ namespace GUI.Client.Controllers
         /// <param name="name">name of the player (or desired name, can be error)</param>
         public void NetworkLoop(string host, int port, string name)
         {
-            NetworkConnection databaseMessenger = new NetworkConnection(true);
-            databaseMessenger.Connect("localhost", 10000);
-            databaseMessenger.Send("heydatabase:)");
+
 
             if (name.Length > 16)//name was too long
             {
@@ -82,28 +95,51 @@ namespace GUI.Client.Controllers
             }
 
             gameServerConnection.Connect(host, port);//connect to server
-               
-            
 
-         
-               gameServerConnection.Send(name);//send name
-                              
 
-                thisID = int.Parse(gameServerConnection.ReadLine());//player id
-                                                                
+            gameServerConnection.Send(name);//send name
 
-                int worldSize = int.Parse(gameServerConnection.ReadLine());
-               
-                world = new World(worldSize);
 
-                handShake = true;
+            thisID = int.Parse(gameServerConnection.ReadLine());//player id
 
-                
 
-#pragma warning disable CA1416 
-                new Thread(()=> UpdateWorld()).Start();
+            int worldSize = int.Parse(gameServerConnection.ReadLine());
+
+            world = new World(worldSize);
+
+            handShake = true;
+
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    // Open a connection
+                    conn.Open();
+                    MySqlCommand command = conn.CreateCommand();
+
+                    
+                    command.CommandText += $"insert into Games (StartTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
+                    command.ExecuteNonQuery();
+                    command.CommandText += "select last_insert_id();";
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        thisGame = reader.GetInt32(0);
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
+#pragma warning disable CA1416
+            new Thread(() => UpdateWorld()).Start();
 #pragma warning restore CA1416
-            
+
+
         }
 
         /// <summary>
@@ -130,7 +166,7 @@ namespace GUI.Client.Controllers
             }
             NetworkError(true);
 
-    }
+        }
         /// <summary>
         /// Used to handle errors upon disconnection
         /// </summary>
@@ -139,11 +175,12 @@ namespace GUI.Client.Controllers
         /// the text displayed to the user</param>
         public void NetworkError(bool userPrompted)
         {
-            
-            if (userPrompted) {
+
+            if (userPrompted)
+            {
                 errorMessage = "You have disconnected from the server";
             }
-            else if(!disconnected)//to prevent multiple assignments to errorMessage
+            else if (!disconnected)//to prevent multiple assignments to errorMessage
             {
                 errorMessage = "There was an error connecting to the server";
             }
@@ -184,7 +221,7 @@ namespace GUI.Client.Controllers
                 try
                 {
                     sentInformation = gameServerConnection.ReadLine();
-                    
+
 
                 }
                 catch (Exception)
@@ -200,14 +237,75 @@ namespace GUI.Client.Controllers
                     {
                         Snake? snake = JsonSerializer.Deserialize<Snake>(sentInformation);
 
+
+
                         if (!world.snakes.TryAdd(snake!.ID, snake))
                         {
                             world.snakes[snake!.ID] = snake;
+                            if (snake.score > snake.maxScore)//update snake's max score
+                            {
+                                snake.maxScore = snake.score;
+                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                                {
+                                    try
+                                    {
+                                        // Open a connection
+                                        conn.Open();
+                                        MySqlCommand command = conn.CreateCommand();
+
+                                        command.CommandText += $"insert into Players (MaxScore) values({snake.maxScore});";
+                                        command.ExecuteNonQuery();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e.Message);
+                                    }
+
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
+                            {
+                                try
+                                {
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
+
+                                    command.CommandText += $"insert into Players (Name, MaxScore, EnterTime, GameID) values(\"{snake.name}\", {snake.maxScore}, " +
+                                        $"\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\", {thisGame});";
+                                    command.ExecuteNonQuery();
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+
+                            }
                         }
 
                         if (snake.disconnected)
                         {
-                            world.snakes.Remove(snake!.ID);
+                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                                {
+                                    try
+                                    {
+                                        // Open a connection
+                                        conn.Open();
+                                        MySqlCommand command = conn.CreateCommand();
+
+                                        command.CommandText += $"insert into Players (EndTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
+                                        command.ExecuteNonQuery();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e.Message);
+                                    }
+
+                                }
+                                world.snakes.Remove(snake!.ID);
                         }
 
                     }
@@ -254,46 +352,46 @@ namespace GUI.Client.Controllers
             ControlCommand controlCommand = new ControlCommand();
 
             key = key.ToLower();
-            
-                if (key.Equals("w") || key.Equals("arrowup"))
-                {
-                    controlCommand.moving = "up";
-                    string jsonContent = JsonSerializer.Serialize(controlCommand);
-                    gameServerConnection.Send(jsonContent);
-                    
-                }
 
-                else if (key.Equals("s") || key.Equals("arrowdown"))
-                {
-                    controlCommand.moving = "down";
-                    string jsonContent = JsonSerializer.Serialize(controlCommand);
+            if (key.Equals("w") || key.Equals("arrowup"))
+            {
+                controlCommand.moving = "up";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+                gameServerConnection.Send(jsonContent);
 
-                    gameServerConnection.Send(jsonContent);
-                    
-                }
-
-                else if (key.Equals("a") || key.Equals("arrowleft"))
-                {
-                    controlCommand.moving = "left";
-                    string jsonContent = JsonSerializer.Serialize(controlCommand);
-
-                    gameServerConnection.Send(jsonContent);
-                    
-                }
-                else if (key.Equals("d") || key.Equals("arrowright"))
-                {
-                    
-                        controlCommand.moving = "right";
-                        string jsonContent = JsonSerializer.Serialize(controlCommand);
-
-                        gameServerConnection.Send(jsonContent);
-                        
-                    
-                }
             }
-   
 
-        
+            else if (key.Equals("s") || key.Equals("arrowdown"))
+            {
+                controlCommand.moving = "down";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                gameServerConnection.Send(jsonContent);
+
+            }
+
+            else if (key.Equals("a") || key.Equals("arrowleft"))
+            {
+                controlCommand.moving = "left";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                gameServerConnection.Send(jsonContent);
+
+            }
+            else if (key.Equals("d") || key.Equals("arrowright"))
+            {
+
+                controlCommand.moving = "right";
+                string jsonContent = JsonSerializer.Serialize(controlCommand);
+
+                gameServerConnection.Send(jsonContent);
+
+
+            }
+        }
+
+
+
     }
 }
 
