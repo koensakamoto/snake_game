@@ -164,7 +164,9 @@ namespace GUI.Client.Controllers
             {
 
             }
-            NetworkError(true);
+            
+
+                NetworkError(true);
 
         }
         /// <summary>
@@ -184,6 +186,24 @@ namespace GUI.Client.Controllers
             {
                 errorMessage = "There was an error connecting to the server";
             }
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    // Open a connection
+                    conn.Open();
+                    MySqlCommand command = conn.CreateCommand();
+
+                    command.CommandText += $"update Players EndTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
+                        $"where LeaveTime is null;";
+                    command.ExecuteNonQueryAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
             disconnected = true;
 
         }
@@ -239,33 +259,13 @@ namespace GUI.Client.Controllers
 
 
 
-                        if (!world.snakes.TryAdd(snake!.ID, snake))
+                        if (!world.snakes.TryAdd(snake!.ID, snake))//was the snake added successfully (i.e. is this a new add)
                         {
                             world.snakes[snake!.ID] = snake;
-                            if (snake.score > snake.maxScore)//update snake's max score
-                            {
-                                snake.maxScore = snake.score;
-                                using (MySqlConnection conn = new MySqlConnection(connectionString))
-                                {
-                                    try
-                                    {
-                                        // Open a connection
-                                        conn.Open();
-                                        MySqlCommand command = conn.CreateCommand();
-
-                                        command.CommandText += $"insert into Players (MaxScore) values({snake.maxScore});";
-                                        command.ExecuteNonQuery();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine(e.Message);
-                                    }
-
-                                }
-                            }
                         }
                         else
                         {
+                            //First time seeing this player, add to Player table
                             using (MySqlConnection conn = new MySqlConnection(connectionString))
                             {
                                 try
@@ -276,6 +276,28 @@ namespace GUI.Client.Controllers
 
                                     command.CommandText += $"insert into Players (Name, MaxScore, EnterTime, GameID) values(\"{snake.name}\", {snake.maxScore}, " +
                                         $"\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\", {thisGame});";
+                                    command.ExecuteNonQuery();
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                }
+
+                            }
+                        }
+                        if (snake.score > snake.maxScore)//update snake's max score
+                        {
+                            snake.maxScore = snake.score;
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
+                            {
+                                try
+                                {
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
+
+                                    command.CommandText += $"update Players " +
+                                        $"set MaxScore = {snake.maxScore} where Name = \"{snake.name}\";";
                                     command.ExecuteNonQuery();
                                 }
                                 catch (Exception e)
@@ -296,7 +318,8 @@ namespace GUI.Client.Controllers
                                         conn.Open();
                                         MySqlCommand command = conn.CreateCommand();
 
-                                        command.CommandText += $"insert into Players (EndTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
+                                        command.CommandText += $"update Players" +
+                                        $" set LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" where Name = \"{snake.name}\";";
                                         command.ExecuteNonQuery();
                                     }
                                     catch (Exception e)
