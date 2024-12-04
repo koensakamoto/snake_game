@@ -1,11 +1,18 @@
-﻿using CS3500.Networking;
+﻿// <copyright file="NetworkController.cs" 
+//<author>Dominik Jamrich and Kevin Sakamoto</author>
+//<version>1.0</version>
+//<date>November 24, 2024</date>
+//<summary>Server Class (From Chat Assignment)</summary>
+using CS3500.Networking;
 using System.Net;
 using System.Net.Sockets;
 
 
 namespace WebServer
 {
-
+    /// <summary>
+    /// Represents server in a client/server connection
+    /// </summary>
     public static class Server
     {
 
@@ -18,7 +25,7 @@ namespace WebServer
         ///   This should be run asynchronously via a new thread.
         /// </param>
         /// <param name="port"> The port (e.g., 11000) to listen on. </param>
-        public static void StartServer(Action<NetworkConnection> handleConnect, int port)
+        public static void StartServer(Action<NetworkConnectionWebServer> handleConnect, int port)
         {
             TcpListener listener = new(IPAddress.Any, port);
 
@@ -30,7 +37,7 @@ namespace WebServer
 
                 Console.WriteLine("Accepted a connection");
 
-                new Thread(() => handleConnect(new NetworkConnection(client))).Start();  //start a new thread to handle client
+                new Thread(() => handleConnect(new NetworkConnectionWebServer(client))).Start();  //start a new thread to handle client
             }
         }
     }

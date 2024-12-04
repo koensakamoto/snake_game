@@ -117,21 +117,18 @@ namespace GUI.Client.Controllers
                     conn.Open();
                     MySqlCommand command = conn.CreateCommand();
 
-                    
                     command.CommandText += $"insert into Games (StartTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
-                    command.ExecuteNonQuery();
                     command.CommandText += "select last_insert_id();";
+
                     using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        while(reader.Read())
-                        thisGame = reader.GetInt32(0);
+                        while (reader.Read())
+                            thisGame = reader.GetInt32(0);
                     }
-
-
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e.Message);
+                  //failure to reach database
                 }
             }
 
@@ -164,10 +161,7 @@ namespace GUI.Client.Controllers
             {
 
             }
-            
-
-                NetworkError(true);
-
+            NetworkError(true);
         }
         /// <summary>
         /// Used to handle errors upon disconnection
@@ -194,13 +188,13 @@ namespace GUI.Client.Controllers
                     conn.Open();
                     MySqlCommand command = conn.CreateCommand();
 
-                    command.CommandText += $"update Players EndTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
+                    command.CommandText += $"UPDATE Players SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
                         $"where LeaveTime is null;";
-                    command.ExecuteNonQueryAsync();
+                    command.ExecuteNonQuery();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e.Message);
+                    //failure to reach database
                 }
             }
 
@@ -259,11 +253,11 @@ namespace GUI.Client.Controllers
 
 
 
-                        if (!world.snakes.TryAdd(snake!.ID, snake))//was the snake added successfully (i.e. is this a new add)
+                        if (!world.snakes.TryAdd(snake!.ID, snake))//was the snake already in the table
                         {
                             world.snakes[snake!.ID] = snake;
                         }
-                        else
+                        else//this was a newly added snake
                         {
                             //First time seeing this player, add to Player table
                             using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -276,11 +270,11 @@ namespace GUI.Client.Controllers
 
                                     command.CommandText += $"insert into Players (Name, MaxScore, EnterTime, GameID) values(\"{snake.name}\", {snake.maxScore}, " +
                                         $"\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\", {thisGame});";
-                                    command.ExecuteNonQuery();
+                                   command.ExecuteNonQuery();
                                 }
-                                catch (Exception e)
+                                catch (Exception)
                                 {
-                                    Console.WriteLine(e.Message);
+                                   //failure to reach database
                                 }
 
                             }
@@ -300,9 +294,9 @@ namespace GUI.Client.Controllers
                                         $"set MaxScore = {snake.maxScore} where Name = \"{snake.name}\";";
                                     command.ExecuteNonQuery();
                                 }
-                                catch (Exception e)
+                                catch (Exception)
                                 {
-                                    Console.WriteLine(e.Message);
+                                   //failure to reach database
                                 }
 
                             }
@@ -310,27 +304,25 @@ namespace GUI.Client.Controllers
 
                         if (snake.disconnected)
                         {
-                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
+                            {
+                                try
                                 {
-                                    try
-                                    {
-                                        // Open a connection
-                                        conn.Open();
-                                        MySqlCommand command = conn.CreateCommand();
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
 
-                                        command.CommandText += $"update Players" +
-                                        $" set LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" where Name = \"{snake.name}\";";
-                                        command.ExecuteNonQuery();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine(e.Message);
-                                    }
-
+                                    command.CommandText += $"update Players" +
+                                    $" SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" WHERE Name = \"{snake.name}\" AND GameID = {thisGame};";
+                                    command.ExecuteNonQuery();
                                 }
-                                world.snakes.Remove(snake!.ID);
+                                catch (Exception)
+                                {
+                                   
+                                }
+                            }
+                            world.snakes.Remove(snake!.ID);
                         }
-
                     }
 
                     else if (sentInformation.Contains("wall"))//server sent us a wall

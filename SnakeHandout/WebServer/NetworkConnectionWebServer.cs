@@ -20,7 +20,7 @@ namespace CS3500.Networking;
 ///   Wraps the StreamReader/Writer/TcpClient together so we
 ///   don't have to keep creating all three for network actions.
 /// </summary>
-public sealed class NetworkConnection : IDisposable
+public sealed class NetworkConnectionWebServer : IDisposable
 {
     /// <summary>
     ///   The connection/socket abstraction
@@ -38,7 +38,7 @@ public sealed class NetworkConnection : IDisposable
     private StreamWriter? _writer = null;
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="NetworkConnection"/> class.
+    ///   Initializes a new instance of the <see cref="NetworkConnectionWebServer"/> class.
     ///   <para>
     ///     Create a network connection object.
     ///   </para>
@@ -46,7 +46,7 @@ public sealed class NetworkConnection : IDisposable
     /// <param name="tcpClient">
     ///   An already existing TcpClient
     /// </param>
-    public NetworkConnection(TcpClient tcpClient)
+    public NetworkConnectionWebServer(TcpClient tcpClient)
     {
         _tcpClient = tcpClient;
         if (IsConnected)
@@ -58,12 +58,12 @@ public sealed class NetworkConnection : IDisposable
     }
 
     /// <summary>
-    ///   Initializes a new instance of the <see cref="NetworkConnection"/> class.
+    ///   Initializes a new instance of the <see cref="NetworkConnectionWebServer"/> class.
     ///   <para>
     ///     Create a network connection object.  The tcpClient will be unconnected at the start.
     ///   </para>
     /// </summary>
-    public NetworkConnection()
+    public NetworkConnectionWebServer()
         : this(new TcpClient())
     {
     }
