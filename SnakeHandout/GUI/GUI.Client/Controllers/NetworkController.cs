@@ -190,6 +190,8 @@ namespace GUI.Client.Controllers
 
                     command.CommandText += $"UPDATE Players SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
                         $"where LeaveTime is null;";
+                    command.CommandText += $"UPDATE Games SET EndTime =  \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
+                        $"WHERE GameID = {thisGame};";
                     command.ExecuteNonQuery();
                 }
                 catch (Exception)
@@ -404,9 +406,6 @@ namespace GUI.Client.Controllers
 
             }
         }
-
-
-
     }
 }
 

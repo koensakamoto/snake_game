@@ -16,19 +16,17 @@ namespace WebServer
         /// <summary>
         /// Header preceding send of data on correct HTTP format
         /// </summary>
-        private const string httpOkHeader =
+        private const string httpOkHeaderPartial =
             "HTTP/1.1 200 OK\r\n" +
             "Connection: close\r\n" +
-            "Content-Type: text/html; charset=UTF-8\r\n" +
-            "\r\n";
+            "Content-Type: text/html; charset=UTF-8\r\n";
         /// <summary>
         /// Header preceding content for incorrect HTTP request
         /// </summary>
-        private const string httpBadHeader =
+        private const string httpBadHeaderPartial =
              "HTTP/1.1 404 Not Found\r\n" +
             "Connection: close\r\n" +
-            "Content-Type: text/html; charset=UTF-8\r\n" +
-            "\r\n";
+            "Content-Type: text/html; charset=UTF-8\r\n";
         /// <summary>
         /// The connection string.
         /// Your uID login name serves as both your database name and your uid
@@ -66,17 +64,15 @@ namespace WebServer
             string request = connection.ReadLine();
             if (request.Contains("GET / "))//home page
             {
-                string response = string.Empty;
-                response += httpOkHeader;
-                response += "<h1>Welcome to Dom's and Koen's Games</h1>";
-                response += "<a href = \"games\"/games>Games</a>";
+                
+                string response = "<h1>Welcome to Dom's and Koen's Games</h1>" + 
+                "<a href = \"games\"/games>Games</a>";
 
-                connection.Send(response);
+                connection.Send(getHTTP(true,response));
 
             }
             else if (request.Contains("GET /games"))//games page
             {
-                string response = string.Empty;
 
                 if (request.Contains("?gid="))//Requesting specific game
                 {
@@ -96,7 +92,7 @@ namespace WebServer
                                 command.CommandText += "SELECT PlayerID, Name, MaxScore, EnterTime, LeaveTime FROM Players" +
                                     $" where GameID = {gid};";
 
-                                response += httpOkHeader + "<html>" +
+                                string response = "<html>" +
                                     "<table border = \"1\">" +
                                     "<thead>" +
                                     "<tr>" +
@@ -120,19 +116,21 @@ namespace WebServer
                                 response += "</tbody>" +
                                     "</table>" +
                                     "</html>";
+                                connection.Send(getHTTP(true, response));
 
 
                             }
 
                             catch (Exception)
                             {
-                                response = httpBadHeader + errorString;//failed query
+                                connection.Send(getHTTP(false, errorString)); //failed query
                             }
+                            
                         }
                     }
                     else//game request wasn't in correct format
                     {
-                        response = httpBadHeader + errorString;
+                        connection.Send(getHTTP(false, errorString));
                     }
 
                 }
@@ -149,7 +147,7 @@ namespace WebServer
 
                             command.CommandText += "SELECT * from Games";
 
-                            response += httpOkHeader + "<html>" +
+                            string response = "<html>" +
                                 "<table border = \"1\">" +
                                 "<thead>" +
                                 "<tr>" +
@@ -172,26 +170,51 @@ namespace WebServer
                                 "</table>" +
                                 "</html>";
 
-
+                            connection.Send(getHTTP(true, response));
                         }
 
                         catch (Exception)
                         {
-                            response = httpBadHeader + errorString;//failed query
+                            connection.Send(getHTTP(false, errorString));
                         }
+                       
                     }
 
                 }
-                connection.Send(response);
+            
             }
             else//request was not in one of the above formats
             {
-                connection.Send(httpBadHeader + errorString);
+                connection.Send(getHTTP(false, errorString));
             }
-            connection.Disconnect();
+            if(connection.IsConnected) //disconnect if there was some unforeseen error
+                connection.Disconnect();
         }
-
-
+        
+        /// <summary>
+        /// used to add the proper http header to a given existing response
+        /// where response is the body of the http message
+        /// </summary>
+        /// <param name="okHeader">using ok header for true, using bad header for false</param>
+        /// <param name="response">body of http message</param>
+        /// <returns></returns>
+        public static string getHTTP(bool okHeader, string response)
+        {
+            string returnable = string.Empty;
+            if (okHeader)
+            {
+                returnable += httpOkHeaderPartial;
+                returnable += "Content-Length: " + response.Length + "\r\n\r\n";
+                returnable += response;
+            } 
+            else
+            {
+                returnable += httpBadHeaderPartial;
+                returnable += "Content-Length: " + response.Length + "\r\n\r\n";
+                returnable += response;
+            }
+            return returnable;
+        }
     }
 }
 
