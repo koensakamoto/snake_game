@@ -23,7 +23,7 @@ using System.Reflection.PortableExecutable;
 namespace GUI.Client.Controllers
 {
     /// <summary>
-    /// This class represents the controller of our application; it converses with the server and
+    /// This class represents the controller of our application; it converses with the server and 
     /// creates appropriate models for the view to use
     /// </summary>
     public class NetworkController
@@ -59,7 +59,7 @@ namespace GUI.Client.Controllers
         public string errorMessage { get; private set; } = "101:Page Not Found";
 
         /// <summary>
-        /// Was there an error with the name the user inputted (i.e. was it longer than
+        /// Was there an error with the name the user inputted (i.e. was it longer than 
         /// 16 char?) true if yes.
         /// </summary>
         public bool NameError { get; private set; }
@@ -76,21 +76,6 @@ namespace GUI.Client.Controllers
         ///the integer game id representing the most recent game
         ///</summary>
         public int thisGame { get; private set; }
-
-        /// <summary>
-        /// Queue for database operations to be processed in background
-        /// </summary>
-        private Queue<Action> dbOperationQueue = new Queue<Action>();
-
-        /// <summary>
-        /// Lock for the database operation queue
-        /// </summary>
-        private object dbQueueLock = new object();
-
-        /// <summary>
-        /// Flag to stop the database processor thread
-        /// </summary>
-        private bool stopDbProcessor = false;
 
         /// <summary>
         /// Loop representing the active communication between server and client
@@ -124,84 +109,34 @@ namespace GUI.Client.Controllers
 
             handShake = true;
 
-            // Queue the initial database game creation in background - don't block connection!
-            QueueDatabaseOperation(() =>
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                try
                 {
-                    try
-                    {
-                        conn.Open();
-                        MySqlCommand command = conn.CreateCommand();
+                    // Open a connection
+                    conn.Open();
+                    MySqlCommand command = conn.CreateCommand();
 
-                        command.CommandText += $"insert into Games (StartTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
-                        command.CommandText += "select last_insert_id();";
+                    command.CommandText += $"insert into Games (StartTime) values(\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\");";
+                    command.CommandText += "select last_insert_id();";
 
-                        using (MySqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                                thisGame = reader.GetInt32(0);
-                        }
-                    }
-                    catch (Exception)
+                    using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        //failure to reach database
+                        while (reader.Read())
+                            thisGame = reader.GetInt32(0);
                     }
                 }
-            });
+                catch (Exception)
+                {
+                  //failure to reach database
+                }
+            }
 
 #pragma warning disable CA1416
             new Thread(() => UpdateWorld()).Start();
-            new Thread(() => ProcessDatabaseQueue()).Start();
 #pragma warning restore CA1416
 
 
-        }
-
-        /// <summary>
-        /// Processes database operations from the queue in the background
-        /// </summary>
-        private void ProcessDatabaseQueue()
-        {
-            while (!stopDbProcessor)
-            {
-                Action? dbOperation = null;
-
-                lock (dbQueueLock)
-                {
-                    if (dbOperationQueue.Count > 0)
-                    {
-                        dbOperation = dbOperationQueue.Dequeue();
-                    }
-                }
-
-                if (dbOperation != null)
-                {
-                    try
-                    {
-                        dbOperation();
-                    }
-                    catch (Exception)
-                    {
-                        // Silently ignore database errors
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(10); // Wait a bit if queue is empty
-                }
-            }
-        }
-
-        /// <summary>
-        /// Queues a database operation to be processed in the background
-        /// </summary>
-        private void QueueDatabaseOperation(Action operation)
-        {
-            lock (dbQueueLock)
-            {
-                dbOperationQueue.Enqueue(operation);
-            }
         }
 
         /// <summary>
@@ -245,33 +180,27 @@ namespace GUI.Client.Controllers
             {
                 errorMessage = "There was an error connecting to the server";
             }
-
-            // Queue database operations for background processing
-            var gameId = thisGame;
-            QueueDatabaseOperation(() =>
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
-                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                try
                 {
-                    try
-                    {
-                        conn.Open();
-                        MySqlCommand command = conn.CreateCommand();
+                    // Open a connection
+                    conn.Open();
+                    MySqlCommand command = conn.CreateCommand();
 
-                        command.CommandText += $"UPDATE Players SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
-                            $"where LeaveTime is null;";
-                        command.CommandText += $"UPDATE Games SET EndTime =  \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
-                            $"WHERE GameID = {gameId};";
-                        command.ExecuteNonQuery();
-                    }
-                    catch (Exception)
-                    {
-                        //failure to reach database
-                    }
+                    command.CommandText += $"UPDATE Players SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
+                        $"where LeaveTime is null;";
+                    command.CommandText += $"UPDATE Games SET EndTime =  \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" " +
+                        $"WHERE GameID = {thisGame};";
+                    command.ExecuteNonQuery();
                 }
-            });
+                catch (Exception)
+                {
+                    //failure to reach database
+                }
+            }
 
             disconnected = true;
-            stopDbProcessor = true; // Stop the database processor when disconnecting
 
         }
         /// <summary>
@@ -332,76 +261,68 @@ namespace GUI.Client.Controllers
                         }
                         else//this was a newly added snake
                         {
-                            //First time seeing this player, add to Player table - queue the DB operation
-                            var snakeName = snake.name;
-                            var snakeMaxScore = snake.maxScore;
-                            var gameId = thisGame;
-                            QueueDatabaseOperation(() =>
+                            //First time seeing this player, add to Player table
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
                             {
-                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                                try
                                 {
-                                    try
-                                    {
-                                        conn.Open();
-                                        MySqlCommand command = conn.CreateCommand();
-                                        command.CommandText = $"insert into Players (Name, MaxScore, EnterTime, GameID) values(\"{snakeName}\", {snakeMaxScore}, " +
-                                            $"\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\", {gameId});";
-                                        command.ExecuteNonQuery();
-                                    }
-                                    catch (Exception)
-                                    {
-                                        //failure to reach database
-                                    }
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
+
+                                    command.CommandText += $"insert into Players (Name, MaxScore, EnterTime, GameID) values(\"{snake.name}\", {snake.maxScore}, " +
+                                        $"\"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\", {thisGame});";
+                                   command.ExecuteNonQuery();
                                 }
-                            });
+                                catch (Exception)
+                                {
+                                   //failure to reach database
+                                }
+
+                            }
                         }
                         if (snake.score > snake.maxScore)//update snake's max score
                         {
                             snake.maxScore = snake.score;
-                            var snakeName = snake.name;
-                            var maxScore = snake.maxScore;
-                            QueueDatabaseOperation(() =>
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
                             {
-                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                                try
                                 {
-                                    try
-                                    {
-                                        conn.Open();
-                                        MySqlCommand command = conn.CreateCommand();
-                                        command.CommandText = $"update Players " +
-                                            $"set MaxScore = {maxScore} where Name = \"{snakeName}\";";
-                                        command.ExecuteNonQuery();
-                                    }
-                                    catch (Exception)
-                                    {
-                                        //failure to reach database
-                                    }
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
+
+                                    command.CommandText += $"update Players " +
+                                        $"set MaxScore = {snake.maxScore} where Name = \"{snake.name}\";";
+                                    command.ExecuteNonQuery();
                                 }
-                            });
+                                catch (Exception)
+                                {
+                                   //failure to reach database
+                                }
+
+                            }
                         }
 
                         if (snake.disconnected)
                         {
-                            var snakeName = snake.name;
-                            var gameId = thisGame;
-                            QueueDatabaseOperation(() =>
+                            using (MySqlConnection conn = new MySqlConnection(connectionString))
                             {
-                                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                                try
                                 {
-                                    try
-                                    {
-                                        conn.Open();
-                                        MySqlCommand command = conn.CreateCommand();
-                                        command.CommandText = $"update Players" +
-                                        $" SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" WHERE Name = \"{snakeName}\" AND GameID = {gameId};";
-                                        command.ExecuteNonQuery();
-                                    }
-                                    catch (Exception)
-                                    {
+                                    // Open a connection
+                                    conn.Open();
+                                    MySqlCommand command = conn.CreateCommand();
 
-                                    }
+                                    command.CommandText += $"update Players" +
+                                    $" SET LeaveTime = \"{DateTime.Now.ToString("yyyy-MM-dd H:mm:ss")}\" WHERE Name = \"{snake.name}\" AND GameID = {thisGame};";
+                                    command.ExecuteNonQuery();
                                 }
-                            });
+                                catch (Exception)
+                                {
+                                   
+                                }
+                            }
                             world.snakes.Remove(snake!.ID);
                         }
                     }

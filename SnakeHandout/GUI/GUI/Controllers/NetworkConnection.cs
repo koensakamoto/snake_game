@@ -85,20 +85,16 @@ public sealed class NetworkConnection : IDisposable
 
 
     /// <summary>
-    ///   Try to connect to the given host:port.
+    ///   Try to connect to the given host:port. 
     /// </summary>
     /// <param name="host"> The URL or IP address, e.g., www.cs.utah.edu, or  127.0.0.1. </param>
     /// <param name="port"> The port, e.g., 11000. </param>
     public void Connect(string host, int port)
     {
-        Console.WriteLine($"NetworkConnection.Connect: Creating new TcpClient");
         _tcpClient = new TcpClient();
-        Console.WriteLine($"NetworkConnection.Connect: Connecting to {host}:{port}");
         _tcpClient.Connect(host, port);
-        Console.WriteLine($"NetworkConnection.Connect: Connection successful, setting up streams");
         _reader = new StreamReader(_tcpClient.GetStream(), Encoding.UTF8);
         _writer = new StreamWriter(_tcpClient.GetStream(), Encoding.UTF8) { AutoFlush = true }; // AutoFlush ensures data is sent immediately
-        Console.WriteLine($"NetworkConnection.Connect: Streams configured successfully");
     }
 
 
