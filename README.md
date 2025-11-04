@@ -6,6 +6,14 @@ A networked multiplayer Snake game implementation with web-based UI and MySQL da
 
 This project consists of a networked Snake game with a WebAssembly-based GUI client and a custom web server. The game features real-time multiplayer gameplay, game state persistence, and player statistics tracking.
 
+## Demo
+
+
+https://github.com/user-attachments/assets/29d3150b-fdc3-42bc-a97b-4a4476e63585
+
+
+
+
 ## Project Structure
 
 ```
