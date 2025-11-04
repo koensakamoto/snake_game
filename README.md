@@ -96,6 +96,29 @@ The web application should open in your default browser automatically.
 3. Configure connection string in the appropriate configuration file
 4. The application will handle table creation on first run
 
+## Multithreading
+
+Thread Architecture
+
+UpdateWorld Thread: Continuously receives game state updates from the server and processes JSON data
+Database Processing Thread: Asynchronously handles all MySQL operations via a producer-consumer queue
+Server Connection Threads: Each client connection runs in a dedicated thread for concurrent handling
+Rendering Loop: Non-blocking 50 FPS game loop using await Task.Delay(20)
+
+Thread Safety
+
+World State: Protected by lock (world) during all read/write operations
+Database Queue: Synchronized with lock (dbQueueLock) for safe enqueueing
+Copy-on-Read Pattern: copyWorld() creates safe snapshots for the rendering thread
+Animation Handler: Uses lock (this) for powerup animation state management
+
+Key Benefits
+
+Network I/O, database operations, and rendering run independently without blocking
+Background database processing prevents game lag during data persistence
+Lock-based synchronization ensures data integrity across concurrent operations
+Graceful shutdown via stopDbProcessor flag for clean thread termination
+
 ## Development
 
 ### Projects
