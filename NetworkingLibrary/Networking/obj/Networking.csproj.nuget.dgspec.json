@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj": {}
+    "C:\\Users\\koens\\Downloads\\Dev\\snake_game\\NetworkingLibrary\\Networking\\Networking.csproj": {}
   },
   "projects": {
-    "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj": {
+    "C:\\Users\\koens\\Downloads\\Dev\\snake_game\\NetworkingLibrary\\Networking\\Networking.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj",
+        "projectUniqueName": "C:\\Users\\koens\\Downloads\\Dev\\snake_game\\NetworkingLibrary\\Networking\\Networking.csproj",
         "projectName": "Networking",
-        "projectPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\Networking.csproj",
+        "projectPath": "C:\\Users\\koens\\Downloads\\Dev\\snake_game\\NetworkingLibrary\\Networking\\Networking.csproj",
         "packagesPath": "C:\\Users\\koens\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\koens\\OneDrive\\Desktop\\working\\NetworkingLibrary\\Networking\\obj\\",
+        "outputPath": "C:\\Users\\koens\\Downloads\\Dev\\snake_game\\NetworkingLibrary\\Networking\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\koens\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,7 +40,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -67,7 +68,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

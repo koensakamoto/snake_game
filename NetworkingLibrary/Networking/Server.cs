@@ -36,7 +36,8 @@ public static class Server
     /// <param name="port"> The port (e.g., 11000) to listen on. </param>
     public static void StartServer(Action<NetworkConnection> handleConnect, int port)
     {
-        TcpListener listener = new(IPAddress.Any, port);
+        TcpListener listener = new(IPAddress.IPv6Any, port);
+        listener.Server.DualMode = true; // Enable dual-mode to accept both IPv4 and IPv6
 
         listener.Start();
 
