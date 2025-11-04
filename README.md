@@ -103,7 +103,7 @@ Thread Architecture
 UpdateWorld Thread: Continuously receives game state updates from the server and processes JSON data
 Database Processing Thread: Asynchronously handles all MySQL operations via a producer-consumer queue
 Server Connection Threads: Each client connection runs in a dedicated thread for concurrent handling
-Rendering Loop: Non-blocking 50 FPS game loop using await Task.Delay(20)
+Rendering Loop: Non-blocking 60 FPS game loop using await Task.Delay()
 
 Thread Safety
 
